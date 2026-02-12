@@ -24,6 +24,8 @@ const favoriteRoutes=require('./routes/favoriteRoutes')
 app.use('/api',favoriteRoutes)
 const testimonialRoutes=require('./routes/testimonialRoutes')
 app.use('/api',testimonialRoutes)
+const agentRoutes=require('./routes/agentRoutes')
+app.use('/api',agentRoutes)
 app.get('/',async(req,res)=>{
 res.send("Real Estate is Running")
 })

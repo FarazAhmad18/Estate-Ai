@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   MapPin, BedDouble, Maximize, Building2, Tag, Phone, Mail, User,
-  ChevronLeft, ChevronRight, ArrowLeft, Heart
+  ChevronLeft, ChevronRight, ArrowLeft, Heart, Star, Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
@@ -18,6 +18,16 @@ export default function PropertyDetail() {
   const [currentImg, setCurrentImg] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
+
+  // Agent rating & reviews
+  const [agentStats, setAgentStats] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [reviewTotal, setReviewTotal] = useState(0);
+  const [hasReviewed, setHasReviewed] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewContent, setReviewContent] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [hoverRating, setHoverRating] = useState(0);
 
   useEffect(() => {
     const fetches = [
@@ -43,6 +53,55 @@ export default function PropertyDetail() {
         .catch(() => {});
     }
   }, [user, id]);
+
+  // Fetch agent stats + reviews when property loads
+  useEffect(() => {
+    if (!property?.agent_id) return;
+    const agentId = property.agent_id;
+    api.get(`/agents/${agentId}`).then((res) => setAgentStats(res.data.stats)).catch(() => {});
+    fetchReviews(agentId);
+  }, [property?.agent_id]);
+
+  const fetchReviews = (agentId) => {
+    api.get(`/agents/${agentId}/reviews?limit=5`).then((res) => {
+      setReviews(res.data.reviews);
+      setReviewTotal(res.data.totalCount);
+      if (user) setHasReviewed(res.data.reviews.some((r) => r.reviewer_id === user.id));
+    }).catch(() => {});
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!reviewContent.trim()) return toast.error('Please write a review');
+    setSubmitting(true);
+    try {
+      const res = await api.post(`/agents/${property.agent_id}/reviews`, { rating: reviewRating, content: reviewContent.trim() });
+      setReviews((prev) => [res.data.review, ...prev]);
+      setReviewTotal((t) => t + 1);
+      setHasReviewed(true);
+      setReviewContent('');
+      setReviewRating(5);
+      api.get(`/agents/${property.agent_id}`).then((r) => setAgentStats(r.data.stats)).catch(() => {});
+      toast.success('Review submitted');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to submit review');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      await api.delete(`/agents/reviews/${reviewId}`);
+      setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+      setReviewTotal((t) => t - 1);
+      setHasReviewed(false);
+      api.get(`/agents/${property.agent_id}`).then((r) => setAgentStats(r.data.stats)).catch(() => {});
+      toast.success('Review deleted');
+    } catch {
+      toast.error('Failed to delete review');
+    }
+  };
 
   const handleToggleFavorite = async () => {
     if (!user) return navigate('/login');
@@ -207,6 +266,133 @@ export default function PropertyDetail() {
                 {property.description}
               </p>
             </div>
+
+            {/* Agent Reviews Section */}
+            {agent && (
+              <div>
+                <div className="flex items-center justify-between mb-5">
+                  <h2 className="text-lg font-semibold text-primary">
+                    Agent Reviews
+                    {reviewTotal > 0 && <span className="text-muted font-normal text-sm ml-2">({reviewTotal})</span>}
+                  </h2>
+                  {agentStats && agentStats.avgRating > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <Star size={16} className="fill-amber-400 text-amber-400" />
+                      <span className="text-sm font-semibold text-primary">{agentStats.avgRating}</span>
+                      <span className="text-xs text-muted">avg</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Review Form for Buyers */}
+                {user && user.role === 'Buyer' && user.id !== property.agent_id && !hasReviewed && (
+                  <div className="bg-surface rounded-2xl p-5 mb-5">
+                    <p className="text-sm font-medium text-primary mb-3">Rate this agent</p>
+                    <form onSubmit={handleSubmitReview}>
+                      <div className="flex items-center gap-1 mb-3">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => setReviewRating(s)}
+                            onMouseEnter={() => setHoverRating(s)}
+                            onMouseLeave={() => setHoverRating(0)}
+                            className="p-0.5"
+                          >
+                            <Star
+                              size={28}
+                              className={`transition-colors ${
+                                s <= (hoverRating || reviewRating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'
+                              }`}
+                            />
+                          </button>
+                        ))}
+                        <span className="text-sm text-muted ml-2">{hoverRating || reviewRating}/5</span>
+                      </div>
+                      <textarea
+                        value={reviewContent}
+                        onChange={(e) => setReviewContent(e.target.value)}
+                        placeholder="Share your experience with this agent..."
+                        rows={3}
+                        className="w-full px-4 py-3 bg-white rounded-xl text-sm border border-border/50 focus:border-accent transition-colors resize-none"
+                      />
+                      <button
+                        type="submit"
+                        disabled={submitting}
+                        className="mt-3 bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                      >
+                        {submitting ? 'Submitting...' : 'Submit Review'}
+                      </button>
+                    </form>
+                  </div>
+                )}
+
+                {/* Not logged in prompt */}
+                {!user && (
+                  <div className="bg-surface rounded-2xl p-5 mb-5 text-center">
+                    <p className="text-sm text-muted">
+                      <Link to="/login" className="text-accent font-medium hover:underline">Sign in</Link> to rate this agent
+                    </p>
+                  </div>
+                )}
+
+                {/* Reviews List */}
+                {reviews.length > 0 ? (
+                  <div className="space-y-4">
+                    {reviews.map((review) => (
+                      <div key={review.id} className="bg-surface rounded-xl p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center overflow-hidden">
+                              {review.Reviewer?.avatar_url ? (
+                                <img src={review.Reviewer.avatar_url} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <User size={14} className="text-muted" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-primary">{review.Reviewer?.name || 'Anonymous'}</p>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <div className="flex items-center gap-0.5">
+                                  {[1, 2, 3, 4, 5].map((s) => (
+                                    <Star key={s} size={12} className={s <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />
+                                  ))}
+                                </div>
+                                <span className="text-xs text-muted">
+                                  {new Date(review.createdAt).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          {user && review.reviewer_id === user.id && (
+                            <button
+                              onClick={() => handleDeleteReview(review.id)}
+                              className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-muted hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+                        </div>
+                        <p className="mt-2.5 text-sm text-secondary leading-relaxed pl-12">{review.content}</p>
+                      </div>
+                    ))}
+                    {reviewTotal > 5 && (
+                      <Link
+                        to={`/agents/${agent.id}`}
+                        className="block text-center text-sm text-accent hover:underline py-2"
+                      >
+                        View all {reviewTotal} reviews
+                      </Link>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-surface rounded-xl p-8 text-center">
+                    <Star size={24} className="mx-auto text-muted mb-2" />
+                    <p className="text-sm text-muted">No reviews yet for this agent</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Right Sidebar */}
@@ -215,7 +401,7 @@ export default function PropertyDetail() {
             {agent && (
               <div className="bg-surface rounded-2xl p-6 sticky top-24">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-4">Listed by</h3>
-                <div className="flex items-center gap-3 mb-5">
+                <Link to={`/agents/${agent.id}`} className="flex items-center gap-3 mb-4 group">
                   <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center overflow-hidden">
                     {agent.avatar_url ? (
                       <img src={agent.avatar_url} alt="" className="w-full h-full object-cover" />
@@ -224,10 +410,26 @@ export default function PropertyDetail() {
                     )}
                   </div>
                   <div>
-                    <p className="font-medium text-primary">{agent.name}</p>
-                    <p className="text-xs text-muted">Agent</p>
+                    <p className="font-medium text-primary group-hover:text-accent transition-colors">{agent.name}</p>
+                    <p className="text-xs text-accent">View Profile</p>
                   </div>
-                </div>
+                </Link>
+
+                {agentStats && (
+                  <div className="flex items-center gap-2 mb-5 px-1">
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star
+                          key={s}
+                          size={14}
+                          className={s <= Math.round(agentStats.avgRating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm font-medium text-primary">{agentStats.avgRating || '0'}</span>
+                    <span className="text-xs text-muted">({agentStats.totalReviews} {agentStats.totalReviews === 1 ? 'review' : 'reviews'})</span>
+                  </div>
+                )}
 
                 <div className="space-y-3">
                   {agent.email && (

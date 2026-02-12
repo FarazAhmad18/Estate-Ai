@@ -1,7 +1,8 @@
-const { Op } = require('sequelize')
+const { Op, fn, col } = require('sequelize')
 const Property=require('../models/Property')
 const User=require('../models/User')
 const PropertyImage=require('../models/PropertyImage')
+const {AgentReview,Favorite}=require('../models/index')
 
 exports.search=async(req,res)=>{
     try{
@@ -13,6 +14,7 @@ exports.search=async(req,res)=>{
  const offset = (page - 1) * limit
 
  const where={}
+ if(req.query.agent_id) where.agent_id=parseInt(req.query.agent_id)
  if(location) where.location= {[Op.iLike]:`%${location}%`}
  if(type && type!=='All') where.type=type
  if(purpose && purpose!=='All') where.purpose=purpose
@@ -51,7 +53,7 @@ exports.getproperty=async(req,res)=>{
     try{
         const {id}=req.params
         if(!id) return res.status(400).json({error:'Property ID is required'})
-         const property= await Property.findByPk(id, { include: [{ model: User, attributes: ['id', 'name', 'email', 'phone'] }, { model: PropertyImage }] })
+         const property= await Property.findByPk(id, { include: [{ model: User, attributes: ['id', 'name', 'email', 'phone', 'avatar_url'] }, { model: PropertyImage }] })
         if(!property) return res.status(404).json({error:'Property not found'})
         return res.status(200).json({property})
     }
@@ -128,7 +130,32 @@ exports.getAgentStats=async(req,res)=>{
         const rented=all.filter(p=>p.status==='Rented').length
         const forSale=all.filter(p=>p.purpose==='Sale'&&p.status==='Available').length
         const forRent=all.filter(p=>p.purpose==='Rent'&&p.status==='Available').length
-        return res.json({total,available,sold,rented,forSale,forRent,joinedAt:req.user.createdAt})
+
+        const reviewStats=await AgentReview.findOne({
+            where:{agent_id:agentId},
+            attributes:[
+                [fn('AVG',col('rating')),'avgRating'],
+                [fn('COUNT',col('id')),'totalReviews'],
+            ],
+            raw:true,
+        })
+        const avgRating=reviewStats?.avgRating?parseFloat(parseFloat(reviewStats.avgRating).toFixed(1)):0
+        const totalReviews=parseInt(reviewStats?.totalReviews)||0
+
+        const propertyIds=all.map(p=>p.id)
+        let totalFavorites=0
+        if(propertyIds.length>0){
+            totalFavorites=await Favorite.count({where:{property_id:{[Op.in]:propertyIds}}})
+        }
+
+        const recentReviews=await AgentReview.findAll({
+            where:{agent_id:agentId},
+            include:[{model:User,as:'Reviewer',attributes:['id','name','avatar_url']}],
+            order:[['createdAt','DESC']],
+            limit:3,
+        })
+
+        return res.json({total,available,sold,rented,forSale,forRent,joinedAt:req.user.createdAt,avgRating,totalReviews,totalFavorites,recentReviews})
     }catch(e){
         console.error("Agent stats error:",e)
         return res.status(500).json({error:'Failed to fetch stats'})

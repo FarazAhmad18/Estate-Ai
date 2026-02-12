@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Plus, Building2, Eye, Pencil, Trash2, Camera,
   User, TrendingUp, CalendarDays, Home, CheckCircle2, Clock,
-  ChevronDown
+  ChevronDown, Star, Heart
 } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -54,9 +54,8 @@ export default function Dashboard() {
   const fetchProperties = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/properties', { params: { page, limit: 50, sortBy: 'createdAt', order: 'DESC', status: 'All' } });
-      const myProps = res.data.properties.filter((p) => p.agent_id === user?.id);
-      setProperties(myProps);
+      const res = await api.get('/properties', { params: { page, limit: 50, sortBy: 'createdAt', order: 'DESC', status: 'All', agent_id: user?.id } });
+      setProperties(res.data.properties);
       setTotalPages(res.data.totalPages);
     } catch {
       toast.error('Failed to load properties');
@@ -173,7 +172,7 @@ export default function Dashboard() {
 
         {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <div className="bg-white rounded-2xl border border-border/50 p-5">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
                 <Building2 size={18} className="text-primary" />
@@ -202,6 +201,34 @@ export default function Dashboard() {
               <p className="text-2xl font-semibold text-primary">{stats.rented}</p>
               <p className="text-xs text-muted mt-0.5">Rented</p>
             </div>
+          </div>
+        )}
+        {stats && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white rounded-2xl border border-border/50 p-5">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mb-3">
+                <Star size={18} className="text-amber-500" />
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <p className="text-2xl font-semibold text-primary">{stats.avgRating || '—'}</p>
+                <p className="text-xs text-muted">/ 5</p>
+              </div>
+              <p className="text-xs text-muted mt-0.5">Avg Rating</p>
+            </div>
+            <div className="bg-white rounded-2xl border border-border/50 p-5">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center mb-3">
+                <User size={18} className="text-purple-500" />
+              </div>
+              <p className="text-2xl font-semibold text-primary">{stats.totalReviews || 0}</p>
+              <p className="text-xs text-muted mt-0.5">Reviews</p>
+            </div>
+            <div className="bg-white rounded-2xl border border-border/50 p-5">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center mb-3">
+                <Heart size={18} className="text-rose-500" />
+              </div>
+              <p className="text-2xl font-semibold text-primary">{stats.totalFavorites || 0}</p>
+              <p className="text-xs text-muted mt-0.5">Total Saves</p>
+            </div>
             <div className="bg-white rounded-2xl border border-border/50 p-5">
               <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mb-3">
                 <CalendarDays size={18} className="text-amber-500" />
@@ -216,6 +243,7 @@ export default function Dashboard() {
         <div className="flex gap-1 bg-surface rounded-xl p-1 mb-8 w-fit">
           {[
             { key: 'listings', label: 'My Listings' },
+            { key: 'reviews', label: `Reviews${stats?.totalReviews ? ` (${stats.totalReviews})` : ''}` },
             { key: 'profile', label: 'Profile' },
           ].map((t) => (
             <button
@@ -361,6 +389,57 @@ export default function Dashboard() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Reviews Tab */}
+        {tab === 'reviews' && (
+          <>
+            {stats?.recentReviews && stats.recentReviews.length > 0 ? (
+              <div className="space-y-4">
+                {stats.recentReviews.map((review) => (
+                  <div key={review.id} className="bg-white rounded-2xl border border-border/50 p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-surface flex items-center justify-center overflow-hidden">
+                          {review.Reviewer?.avatar_url ? (
+                            <img src={review.Reviewer.avatar_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <User size={16} className="text-muted" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-primary">{review.Reviewer?.name || 'Anonymous'}</p>
+                          <p className="text-xs text-muted">{formatDate(review.createdAt)}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-0.5">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star
+                            key={s}
+                            size={14}
+                            className={s <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm text-secondary leading-relaxed">{review.content}</p>
+                  </div>
+                ))}
+                {stats.totalReviews > 3 && (
+                  <p className="text-center text-sm text-muted">
+                    Showing latest 3 of {stats.totalReviews} reviews.{' '}
+                    <a href={`/agents/${user?.id}`} className="text-accent hover:underline">View all</a>
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-32 bg-surface rounded-2xl">
+                <Star size={40} className="mx-auto text-muted mb-4" />
+                <p className="text-lg font-medium text-primary">No reviews yet</p>
+                <p className="mt-2 text-sm text-muted">Reviews from buyers will appear here.</p>
               </div>
             )}
           </>

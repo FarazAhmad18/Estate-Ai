@@ -15,6 +15,7 @@ import EditProperty from './pages/EditProperty';
 import BuyerProfile from './pages/BuyerProfile';
 import SavedProperties from './pages/SavedProperties';
 import AdminDashboard from './pages/AdminDashboard';
+import AgentProfile from './pages/AgentProfile';
 
 const AUTH_ROUTES = ['/login', '/register'];
 
@@ -46,6 +47,7 @@ function AppContent() {
             <Route path="/register" element={<Register />} />
             <Route path="/properties" element={<Properties />} />
             <Route path="/properties/:id" element={<PropertyDetail />} />
+            <Route path="/agents/:id" element={<AgentProfile />} />
             <Route
               path="/dashboard"
               element={
