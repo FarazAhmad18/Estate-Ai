@@ -15,6 +15,10 @@ exports.search=async(req,res)=>{
 
  const where={}
  if(req.query.agent_id) where.agent_id=parseInt(req.query.agent_id)
+ if(req.query.agent_name){
+     const matchingAgents=await User.findAll({where:{role:'Agent',name:{[Op.iLike]:`%${req.query.agent_name}%`}},attributes:['id'],raw:true})
+     where.agent_id={[Op.in]:matchingAgents.map(a=>a.id)}
+ }
  if(location) where.location= {[Op.iLike]:`%${location}%`}
  if(type && type!=='All') where.type=type
  if(purpose && purpose!=='All') where.purpose=purpose
@@ -118,6 +122,35 @@ res.status(200).json({msg:'Property Deleted Successfully'})
     catch(e){
       console.error("Delete property error:", e)
       return res.status(500).json({error:'Failed to delete property'})
+    }
+}
+exports.getLocationSuggestions=async(req,res)=>{
+    try{
+        const q=req.query.q
+        if(!q||!q.trim()) return res.json({suggestions:[]})
+        const trimmed=q.trim()
+        const [locations,agents]=await Promise.all([
+            Property.findAll({
+                where:{status:'Available',location:{[Op.iLike]:`%${trimmed}%`}},
+                attributes:[[fn('DISTINCT',col('location')),'location']],
+                limit:4,
+                raw:true,
+            }),
+            User.findAll({
+                where:{role:'Agent',name:{[Op.iLike]:`%${trimmed}%`}},
+                attributes:['id','name'],
+                limit:4,
+                raw:true,
+            }),
+        ])
+        const suggestions=[
+            ...locations.map(r=>({text:r.location,type:'location'})),
+            ...agents.map(r=>({text:r.name,type:'agent',id:r.id})),
+        ]
+        return res.json({suggestions})
+    }catch(e){
+        console.error("Location suggestions error:",e)
+        return res.status(500).json({error:'Failed to fetch suggestions'})
     }
 }
 exports.getAgentStats=async(req,res)=>{

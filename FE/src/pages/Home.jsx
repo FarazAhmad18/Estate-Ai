@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import PropertyCard from '../components/PropertyCard';
+import LocationAutocomplete from '../components/LocationAutocomplete';
 
 import heroInterior from '../assets/hero-interior.png';
 import heroExterior from '../assets/hero-exterior.png';
@@ -114,7 +115,7 @@ export default function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative min-h-screen pt-16 flex items-center bg-white overflow-hidden">
+      <section className="relative min-h-screen pt-16 flex items-center bg-white overflow-x-clip z-10">
         <div className="max-w-7xl mx-auto px-6 w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left */}
@@ -136,12 +137,18 @@ export default function Home() {
                 <div className="flex items-center bg-surface rounded-full p-1.5 border border-border/50 shadow-sm">
                   <div className="flex items-center gap-2 flex-1 px-4">
                     <MapPin size={16} className="text-muted flex-shrink-0" />
-                    <input
-                      type="text"
+                    <LocationAutocomplete
                       value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search by location..."
-                      className="w-full bg-transparent text-sm text-secondary placeholder:text-muted py-2.5"
+                      onChange={setSearch}
+                      onSelect={(suggestion) => {
+                        if (suggestion.type === 'agent') {
+                          navigate(`/properties?agent_name=${encodeURIComponent(suggestion.text)}`);
+                        } else {
+                          navigate(`/properties?location=${encodeURIComponent(suggestion.text)}`);
+                        }
+                      }}
+                      className="flex-1"
+                      inputClassName="w-full bg-transparent text-sm text-secondary placeholder:text-muted py-2.5"
                     />
                   </div>
                   <button

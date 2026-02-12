@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import PropertyCard from '../components/PropertyCard';
+import LocationAutocomplete from '../components/LocationAutocomplete';
 import Spinner from '../components/Spinner';
 
 const TYPES = ['All', 'House', 'Apartment', 'Villa', 'Commercial', 'Land'];
@@ -30,6 +31,7 @@ export default function Properties() {
 
   const [filters, setFilters] = useState({
     location: searchParams.get('location') || '',
+    agent_name: searchParams.get('agent_name') || '',
     type: searchParams.get('type') || 'All',
     purpose: searchParams.get('purpose') || 'All',
     minPrice: searchParams.get('minPrice') || '',
@@ -49,7 +51,11 @@ export default function Properties() {
         sortBy,
         order,
       };
-      if (overrides.location) params.location = overrides.location;
+      if (overrides.agent_name) {
+        params.agent_name = overrides.agent_name;
+      } else if (overrides.location) {
+        params.location = overrides.location;
+      }
       if (overrides.type !== 'All') params.type = overrides.type;
       if (overrides.purpose !== 'All') params.purpose = overrides.purpose;
       if (overrides.minPrice) params.minPrice = overrides.minPrice;
@@ -92,6 +98,7 @@ export default function Properties() {
   const clearFilters = () => {
     const defaults = {
       location: '',
+      agent_name: '',
       type: 'All',
       purpose: 'All',
       minPrice: '',
@@ -140,13 +147,19 @@ export default function Properties() {
         <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <div className="flex items-center flex-1 bg-surface rounded-xl px-4 border border-border/50">
             <Search size={16} className="text-muted" />
-            <input
-              type="text"
+            <LocationAutocomplete
               value={filters.location}
-              onChange={(e) => updateFilter('location', e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && applyFilters()}
-              placeholder="Search by location..."
-              className="w-full bg-transparent px-3 py-3 text-sm"
+              onChange={(val) => updateFilter('location', val)}
+              onSelect={(suggestion) => {
+                const updated = suggestion.type === 'agent'
+                  ? { ...filters, location: suggestion.text, agent_name: suggestion.text, page: 1 }
+                  : { ...filters, location: suggestion.text, agent_name: '', page: 1 };
+                setFilters(updated);
+                fetchProperties(updated);
+              }}
+              onEnter={applyFilters}
+              className="flex-1"
+              inputClassName="w-full bg-transparent px-3 py-3 text-sm"
             />
             {filters.location && (
               <button onClick={() => { updateFilter('location', ''); }} className="text-muted hover:text-secondary">
