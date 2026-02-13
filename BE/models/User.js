@@ -49,6 +49,10 @@ allowNull:false,
         type:DataTypes.DATE,
         allowNull:true,
     },
+    googleId:{
+        type:DataTypes.STRING,
+        allowNull:true,
+    },
 
 },{
     tableName:'users',

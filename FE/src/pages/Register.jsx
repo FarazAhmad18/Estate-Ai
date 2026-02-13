@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff } from 'lucide-react';
 import PasswordStrengthIndicator from '../components/PasswordStrengthIndicator';
@@ -13,7 +14,7 @@ export default function Register() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const { register } = useAuth();
+  const { register, googleLogin } = useAuth();
   const navigate = useNavigate();
 
   const update = (key, val) => setForm((f) => ({ ...f, [key]: val }));
@@ -42,8 +43,8 @@ export default function Register() {
     setErrors({});
     try {
       await register(form.name, form.email, form.password, form.role);
-      toast.success('Verification code sent to your email');
-      navigate('/verify-otp', { state: { email: form.email } });
+      toast.success('Account created!');
+      navigate('/');
     } catch (err) {
       const msg = err.response?.data?.error || 'Registration failed';
       setErrors({ form: msg });
@@ -190,6 +191,32 @@ export default function Register() {
               {loading ? 'Creating account...' : 'Create account'}
             </button>
           </form>
+
+          <div className="my-5 flex items-center gap-3">
+            <div className="flex-1 h-px bg-border/50" />
+            <span className="text-xs text-muted">or</span>
+            <div className="flex-1 h-px bg-border/50" />
+          </div>
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={async (response) => {
+                try {
+                  await googleLogin(response.credential, form.role);
+                  toast.success('Account created!');
+                  navigate('/');
+                } catch (err) {
+                  const msg = err.response?.data?.error || 'Google sign-up failed';
+                  setErrors({ form: msg });
+                }
+              }}
+              onError={() => setErrors({ form: 'Google sign-up failed' })}
+              shape="pill"
+              size="large"
+              width="100%"
+              text="signup_with"
+            />
+          </div>
 
           <p className="mt-5 text-center text-sm text-muted">
             Already have an account?{' '}
