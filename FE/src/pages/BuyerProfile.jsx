@@ -65,11 +65,13 @@ export default function BuyerProfile() {
     }
   };
 
+  const isGoogle = user?.isGoogleUser;
+
   const handleDeleteAccount = async () => {
-    if (!deletePassword) return;
+    if (isGoogle ? deletePassword !== 'DELETE' : !deletePassword) return;
     setDeleting(true);
     try {
-      await api.delete('/profile', { data: { password: deletePassword } });
+      await api.delete('/profile', { data: isGoogle ? { confirmText: deletePassword } : { password: deletePassword } });
       logout();
       setShowDeleteModal(false);
       toast.success('Account deleted successfully', { duration: 3000 });
@@ -216,8 +218,8 @@ export default function BuyerProfile() {
           </form>
         </div>
 
-        {/* Change Password */}
-        <div className="mt-12 pt-8 border-t border-border/50">
+        {/* Change Password — hidden for Google users */}
+        {!isGoogle && <div className="mt-12 pt-8 border-t border-border/50">
           <button
             type="button"
             onClick={() => { setShowChangePw(!showChangePw); if (showChangePw) setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' }); }}
@@ -303,7 +305,7 @@ export default function BuyerProfile() {
             </button>
           </form>
           )}
-        </div>
+        </div>}
 
         {/* Delete Account */}
         <div className="mt-12 pt-8 border-t border-border/50">
@@ -335,23 +337,24 @@ export default function BuyerProfile() {
               </button>
             </div>
             <p className="text-sm text-muted mb-6">
-              This will permanently delete your account, properties, favorites, and all associated data. Enter your password to confirm.
+              This will permanently delete your account, properties, favorites, and all associated data.
+              {isGoogle ? ' Type DELETE to confirm.' : ' Enter your password to confirm.'}
             </p>
             <div className="relative mb-6">
               <input
-                type={showDeletePw ? 'text' : 'password'}
+                type={isGoogle ? 'text' : (showDeletePw ? 'text' : 'password')}
                 value={deletePassword}
                 onChange={(e) => setDeletePassword(e.target.value)}
-                placeholder="Enter your password"
+                placeholder={isGoogle ? 'Type DELETE to confirm' : 'Enter your password'}
                 className="w-full px-4 py-3 bg-surface rounded-xl text-sm border border-border/50 focus:border-red-400 transition-colors pr-10"
               />
-              <button
+              {!isGoogle && <button
                 type="button"
                 onClick={() => setShowDeletePw(!showDeletePw)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-secondary"
               >
                 {showDeletePw ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
+              </button>}
             </div>
             <div className="flex gap-3">
               <button
@@ -362,7 +365,7 @@ export default function BuyerProfile() {
               </button>
               <button
                 onClick={handleDeleteAccount}
-                disabled={!deletePassword || deleting}
+                disabled={(isGoogle ? deletePassword !== 'DELETE' : !deletePassword) || deleting}
                 className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
               >
                 {deleting ? 'Deleting...' : 'Delete My Account'}

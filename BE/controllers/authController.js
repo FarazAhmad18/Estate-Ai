@@ -29,7 +29,7 @@ exports.register = async (req, res) => {
     const user = await User.create({ name, email, password: hash, role: safeRole });
 
     const token = signToken(user);
-    return res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    return res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, isGoogleUser: !!user.googleId } });
   } catch (err) {
     console.error('Register error:', err);
     res.status(500).json({ error: 'Server error during registration' });
@@ -48,7 +48,7 @@ exports.login = async (req, res) => {
     if (!ok) return res.status(401).json({ error: 'Invalid email or password' });
 
     const token = signToken(user);
-    res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, isGoogleUser: !!user.googleId } });
   } catch (e) {
     console.error('Login error:', e);
     res.status(500).json({ error: 'Server error during login' });
@@ -75,7 +75,7 @@ exports.verifyOtp = async (req, res) => {
     await user.save();
 
     const token = signToken(user);
-    res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, isGoogleUser: !!user.googleId } });
   } catch (err) {
     console.error('Verify OTP error:', err);
     res.status(500).json({ error: 'Server error during verification' });
@@ -189,19 +189,23 @@ exports.resetPassword = async (req, res) => {
 };
 
 exports.profile = async (req, res) => {
-  res.json({ user: req.user });
+  const u = req.user.toJSON();
+  u.isGoogleUser = !!u.googleId;
+  delete u.googleId;
+  res.json({ user: u });
 };
 
 exports.changePassword = async (req, res) => {
   try {
+    const user = await User.findByPk(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (user.googleId) return res.status(403).json({ error: 'Password cannot be changed for Google-linked accounts' });
+
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Current password and new password are required' });
 
     const pwErrors = validatePassword(newPassword);
     if (pwErrors.length) return res.status(400).json({ error: pwErrors.join('. ') });
-
-    const user = await User.findByPk(req.user.id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
 
     const ok = await bcrypt.compare(currentPassword, user.password);
     if (!ok) return res.status(403).json({ error: 'Current password is incorrect' });
@@ -218,14 +222,19 @@ exports.changePassword = async (req, res) => {
 
 exports.deleteAccount = async (req, res) => {
   try {
-    const { password } = req.body;
-    if (!password) return res.status(400).json({ error: 'Password is required' });
-
+    const { password, confirmText } = req.body;
     const user = await User.findByPk(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) return res.status(403).json({ error: 'Incorrect password' });
+    if (user.googleId) {
+      // Google users must type "DELETE" to confirm
+      if (confirmText !== 'DELETE') return res.status(403).json({ error: 'Type DELETE to confirm account deletion' });
+    } else {
+      // Email/password users must provide correct password
+      if (!password) return res.status(400).json({ error: 'Password is required' });
+      const ok = await bcrypt.compare(password, user.password);
+      if (!ok) return res.status(403).json({ error: 'Incorrect password' });
+    }
 
     await user.destroy();
     res.status(200).json({ message: 'Account deleted' });
@@ -276,7 +285,7 @@ exports.googleAuth = async (req, res) => {
     }
 
     const token = signToken(user);
-    res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, isGoogleUser: !!user.googleId } });
   } catch (err) {
     console.error('Google auth error:', err);
     res.status(500).json({ error: 'Google authentication failed' });
