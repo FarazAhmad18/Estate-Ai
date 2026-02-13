@@ -10,7 +10,8 @@ const app=express()
 const sequelize=require('./config/db')
 const cors=require('cors')
 app.use(express.json())
-app.use(cors())
+const allowedOrigins=process.env.FRONTEND_URL?process.env.FRONTEND_URL.split(','):['http://localhost:5173']
+app.use(cors({origin:allowedOrigins,credentials:true}))
 const { Conversation, User } = require('./models/index')
 const {trackVisitor}=require('./middlewares/visitorMiddleware')
 app.use(trackVisitor)
@@ -39,8 +40,9 @@ res.send("Real Estate is Running")
 const server=http.createServer(app)
 const io=new Server(server,{
   cors:{
-    origin:'*',
+    origin:allowedOrigins,
     methods:['GET','POST'],
+    credentials:true,
   },
 })
 
