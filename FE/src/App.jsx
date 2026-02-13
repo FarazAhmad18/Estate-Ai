@@ -25,6 +25,7 @@ const AUTH_ROUTES = ['/login', '/register', '/verify-otp', '/forgot-password', '
 function AppContent() {
   const { pathname } = useLocation();
   const isAuthPage = AUTH_ROUTES.includes(pathname);
+  const isAdminPage = pathname === '/admin';
 
   return (
     <>
@@ -104,7 +105,7 @@ function AppContent() {
             />
           </Routes>
         </main>
-        {!isAuthPage && <Footer />}
+        {!isAuthPage && !isAdminPage && <Footer />}
       </div>
     </>
   );

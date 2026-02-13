@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Camera, Mail, Phone, Shield, Lock, Trash2, X, Eye, EyeOff } from 'lucide-react';
+import { User, Camera, Mail, Phone, Shield, Lock, Trash2, X, Eye, EyeOff, Calendar } from 'lucide-react';
 import PasswordStrengthIndicator from '../components/PasswordStrengthIndicator';
 import PasswordRequirements from '../components/PasswordRequirements';
 import api from '../lib/api';
@@ -103,7 +103,7 @@ export default function BuyerProfile() {
 
   return (
     <div className="min-h-screen pt-24 pb-16">
-      <div className="max-w-2xl mx-auto px-6">
+      <div className="max-w-3xl mx-auto px-6">
         <h1 className="text-3xl font-semibold text-primary tracking-tight mb-2">My Profile</h1>
         <p className="text-sm text-muted mb-10">Manage your account details.</p>
 
@@ -135,15 +135,15 @@ export default function BuyerProfile() {
         </div>
 
         {/* Info Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-          <div className="bg-surface rounded-xl p-5">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+          <div className="bg-surface rounded-xl p-5 min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
                 <Mail size={16} className="text-muted" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs text-muted">Email</p>
-                <p className="text-sm font-medium text-primary">{user?.email}</p>
+                <p className="text-sm font-medium text-primary truncate">{user?.email}</p>
               </div>
             </div>
           </div>
@@ -155,6 +155,19 @@ export default function BuyerProfile() {
               <div>
                 <p className="text-xs text-muted">Phone</p>
                 <p className="text-sm font-medium text-primary">{user?.phone || 'Not set'}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-surface rounded-xl p-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
+                <Calendar size={16} className="text-muted" />
+              </div>
+              <div>
+                <p className="text-xs text-muted">Member Since</p>
+                <p className="text-sm font-medium text-primary">
+                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
+                </p>
               </div>
             </div>
           </div>

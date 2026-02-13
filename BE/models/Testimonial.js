@@ -30,6 +30,11 @@ const Testimonial=sequelize.define('Testimonial',{
             max:5,
         },
     },
+    approved:{
+        type:DataTypes.BOOLEAN,
+        allowNull:false,
+        defaultValue:true,
+    },
 },{
     tableName:'testimonials',
     timestamps:true,

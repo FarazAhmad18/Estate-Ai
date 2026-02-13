@@ -53,6 +53,7 @@ allowNull:false,
 },{
     tableName:'users',
     timestamps:true,
+    paranoid:true,
 })
 
 module.exports=User;

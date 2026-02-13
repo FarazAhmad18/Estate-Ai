@@ -31,7 +31,13 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const res = await api.post('/login', { email, password });
-    return res.data; // { message, email } — no token yet, OTP required
+    // Admin users get token directly (no OTP)
+    if (res.data.token) {
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      setUser(res.data.user);
+    }
+    return res.data;
   };
 
   const verifyOtp = async (email, otp) => {

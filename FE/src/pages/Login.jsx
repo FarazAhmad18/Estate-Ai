@@ -30,8 +30,13 @@ export default function Login() {
     setErrors({});
     try {
       const data = await login(email, password);
-      toast.success('Verification code sent!');
-      navigate('/verify-otp', { state: { email: data.email } });
+      if (data.token) {
+        toast.success('Logged in!');
+        navigate('/');
+      } else {
+        toast.success('Verification code sent!');
+        navigate('/verify-otp', { state: { email: data.email } });
+      }
     } catch (err) {
       const msg = err.response?.data?.error || 'Invalid credentials';
       setErrors({ form: msg });

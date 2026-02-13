@@ -17,7 +17,7 @@ if(!header.startsWith('Bearer '))
         return res.status(401).json({error:'Invalid token'})
     }
     const user=await User.findByPk(payload.id,{
-        attributes:['id','name','email','role','phone','avatar_url'],}
+        attributes:['id','name','email','role','phone','avatar_url','createdAt'],}
     )
     req.user=user;
     next()

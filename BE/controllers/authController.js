@@ -10,14 +10,20 @@ exports.register = async (req, res) => {
     const { name, email, password, role } = req.body;
     if (!name || !email || !password) return res.status(400).json({ error: 'Name, email, and password are required' });
 
+    const allowedRoles = ['Buyer', 'Agent'];
+    const safeRole = allowedRoles.includes(role) ? role : 'Buyer';
+
     const pwErrors = validatePassword(password);
     if (pwErrors.length) return res.status(400).json({ error: pwErrors.join('. ') });
 
-    const exists = await User.findOne({ where: { email } });
-    if (exists) return res.status(409).json({ error: 'Email already registered' });
+    const exists = await User.findOne({ where: { email }, paranoid: false });
+    if (exists && !exists.deletedAt) return res.status(409).json({ error: 'Email already registered' });
+
+    // If a soft-deleted account exists with this email, remove it so the email can be reused
+    if (exists && exists.deletedAt) await exists.destroy({ force: true });
 
     const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hash, role: role || 'Buyer' });
+    const user = await User.create({ name, email, password: hash, role: safeRole });
 
     // Generate 6-digit OTP
     const otp = String(Math.floor(100000 + Math.random() * 900000));
@@ -46,6 +52,12 @@ exports.login = async (req, res) => {
 
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return res.status(401).json({ error: 'Invalid email or password' });
+
+    // Skip OTP for Admin users — issue token directly
+    if (user.role === 'Admin') {
+      const token = signToken(user);
+      return res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    }
 
     // Generate 6-digit OTP
     const otp = String(Math.floor(100000 + Math.random() * 900000));

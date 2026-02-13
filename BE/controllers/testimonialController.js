@@ -29,6 +29,7 @@ exports.create=async(req,res)=>{
 exports.getAll=async(req,res)=>{
     try{
         const testimonials=await Testimonial.findAll({
+            where:{approved:true},
             include:[{model:User,attributes:['id','name','role','avatar_url']}],
             order:[['createdAt','DESC']],
             limit:12,

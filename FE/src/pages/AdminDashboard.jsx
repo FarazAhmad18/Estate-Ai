@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
 import {
   Users, Building2, MessageSquare, Eye, Trash2, Search,
-  TrendingUp, UserPlus, Activity, ChevronLeft, ChevronRight, Star,
+  TrendingUp, TrendingDown, UserPlus, UserMinus, ChevronLeft, ChevronRight, Star,
+  CheckCircle, XCircle, BadgeDollarSign, KeyRound,
 } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import Spinner from '../components/Spinner';
+import ConfirmModal from '../components/ConfirmModal';
+import UserProfilePanel from '../components/UserProfilePanel';
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
@@ -55,14 +59,74 @@ export default function AdminDashboard() {
   );
 }
 
+/* ─── Helpers ─── */
+function fillDates(data = [], days = 30) {
+  const map = {};
+  data.forEach((d) => { map[d.date] = parseInt(d.count); });
+  const result = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    const key = date.toISOString().split('T')[0];
+    result.push({ date: key, count: map[key] || 0 });
+  }
+  return result;
+}
+
+function TrendBadge({ current, previous }) {
+  if (!previous || previous === 0) return null;
+  const pct = Math.round(((current - previous) / previous) * 100);
+  const up = pct >= 0;
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-[11px] font-semibold ${up ? 'text-emerald-600' : 'text-red-500'}`}>
+      {up ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+      {up ? '+' : ''}{pct}% vs last week
+    </span>
+  );
+}
+
+function SelectFilter({ value, onChange, options, placeholder }) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="px-3 py-2.5 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors"
+    >
+      <option value="">{placeholder}</option>
+      {options.map((o) => (
+        <option key={o} value={o}>{o}</option>
+      ))}
+    </select>
+  );
+}
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white px-3.5 py-2.5 rounded-xl shadow-lg border border-border/50">
+      <p className="text-[11px] text-muted mb-0.5">
+        {new Date(label + 'T00:00:00').toLocaleDateString('en-PK', { month: 'short', day: 'numeric', year: 'numeric' })}
+      </p>
+      <p className="text-sm font-semibold text-primary">{payload[0].value}</p>
+    </div>
+  );
+};
+
 /* ─── Overview Tab ─── */
 function OverviewTab() {
   const [stats, setStats] = useState(null);
+  const [trends, setTrends] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/admin/stats')
-      .then((res) => setStats(res.data))
+    Promise.all([
+      api.get('/admin/stats'),
+      api.get('/admin/trends'),
+    ])
+      .then(([statsRes, trendsRes]) => {
+        setStats(statsRes.data);
+        setTrends(trendsRes.data);
+      })
       .catch(() => toast.error('Failed to load stats'))
       .finally(() => setLoading(false));
   }, []);
@@ -70,27 +134,133 @@ function OverviewTab() {
   if (loading) return <Spinner className="py-32" />;
   if (!stats) return null;
 
-  const cards = [
-    { label: 'Total Users', value: stats.totalUsers, icon: Users, bg: 'bg-primary/10', color: 'text-primary' },
+  const charts = trends ? [
+    {
+      title: 'Users',
+      subtitle: 'New registrations',
+      data: fillDates(trends.usersPerDay),
+      color: '#6366f1',
+      gradientFrom: 'rgba(99,102,241,0.15)',
+      total: stats.newUsersThisWeek,
+      label: 'this week',
+      current: stats.newUsersThisWeek,
+      previous: stats.prevWeekNewUsers,
+    },
+    {
+      title: 'Properties',
+      subtitle: 'New listings',
+      data: fillDates(trends.propertiesPerDay),
+      color: '#10b981',
+      gradientFrom: 'rgba(16,185,129,0.15)',
+      total: stats.totalProperties,
+      label: 'total',
+    },
+    {
+      title: 'Visitors',
+      subtitle: 'Site traffic',
+      data: fillDates(trends.visitorsPerDay),
+      color: '#f59e0b',
+      gradientFrom: 'rgba(245,158,11,0.15)',
+      total: stats.visitorsThisWeek,
+      label: 'this week',
+      current: stats.visitorsThisWeek,
+      previous: stats.prevWeekVisitors,
+    },
+    {
+      title: 'Deleted Accounts',
+      subtitle: 'Account deletions',
+      data: fillDates(trends.deletedAccountsPerDay),
+      color: '#ef4444',
+      gradientFrom: 'rgba(239,68,68,0.15)',
+      total: stats.deletedAccountsThisWeek || 0,
+      label: 'this week',
+      current: stats.deletedAccountsThisWeek || 0,
+      previous: stats.prevWeekDeletedAccounts,
+    },
+  ] : [];
+
+  const statCards = [
+    { label: 'Total Users', value: stats.totalUsers, icon: Users, bg: 'bg-indigo-50', color: 'text-indigo-600' },
     { label: 'Total Properties', value: stats.totalProperties, icon: Building2, bg: 'bg-emerald-50', color: 'text-emerald-600' },
+    { label: 'Sold Properties', value: stats.soldProperties || 0, icon: BadgeDollarSign, bg: 'bg-orange-50', color: 'text-orange-500' },
+    { label: 'Rented Properties', value: stats.rentedProperties || 0, icon: KeyRound, bg: 'bg-violet-50', color: 'text-violet-500' },
     { label: 'Testimonials', value: stats.totalTestimonials, icon: MessageSquare, bg: 'bg-blue-50', color: 'text-blue-500' },
     { label: 'Visitors Today', value: stats.visitorsToday, icon: Eye, bg: 'bg-amber-50', color: 'text-amber-500' },
-    { label: 'Visitors This Week', value: stats.visitorsThisWeek, icon: TrendingUp, bg: 'bg-purple-50', color: 'text-purple-500' },
-    { label: 'New Users This Week', value: stats.newUsersThisWeek, icon: UserPlus, bg: 'bg-red-50', color: 'text-red-500' },
+    { label: 'Deleted Accounts', value: stats.totalDeletedAccounts || 0, icon: UserMinus, bg: 'bg-red-50', color: 'text-red-500' },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-      {cards.map((c) => (
-        <div key={c.label} className="bg-white rounded-2xl border border-border/50 p-5">
-          <div className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center mb-3`}>
-            <c.icon size={18} className={c.color} />
-          </div>
-          <p className="text-2xl font-semibold text-primary">{c.value}</p>
-          <p className="text-xs text-muted mt-0.5">{c.label}</p>
+    <>
+      {/* Charts — hero section */}
+      {charts.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+          {charts.map((ch) => (
+            <div key={ch.title} className="bg-white rounded-2xl border border-border/50 p-6 shadow-sm">
+              <div className="flex items-start justify-between mb-1">
+                <div>
+                  <p className="text-xs font-medium text-muted uppercase tracking-wider">{ch.subtitle}</p>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <p className="text-2xl font-bold text-primary">{ch.total.toLocaleString()}</p>
+                    <span className="text-xs text-muted">{ch.label}</span>
+                  </div>
+                </div>
+                {ch.previous !== undefined && (
+                  <TrendBadge current={ch.current} previous={ch.previous} />
+                )}
+              </div>
+              <div className="mt-4 -mx-2">
+                <ResponsiveContainer width="100%" height={180}>
+                  <AreaChart data={ch.data}>
+                    <defs>
+                      <linearGradient id={`grad-${ch.title}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={ch.gradientFrom} stopOpacity={1} />
+                        <stop offset="100%" stopColor={ch.color} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis
+                      dataKey="date"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 10, fill: '#94a3b8' }}
+                      tickFormatter={(d) => {
+                        const date = new Date(d + 'T00:00:00');
+                        return date.getDate() % 7 === 0 ? date.toLocaleDateString('en-PK', { month: 'short', day: 'numeric' }) : '';
+                      }}
+                      interval={0}
+                    />
+                    <YAxis hide allowDecimals={false} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: ch.color, strokeWidth: 1, strokeDasharray: '4 4' }} />
+                    <Area
+                      type="monotone"
+                      dataKey="count"
+                      stroke={ch.color}
+                      strokeWidth={2.5}
+                      fill={`url(#grad-${ch.title})`}
+                      dot={false}
+                      activeDot={{ r: 5, fill: ch.color, stroke: '#fff', strokeWidth: 2 }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+      )}
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {statCards.map((c) => (
+          <div key={c.label} className="bg-white rounded-2xl border border-border/50 p-5">
+            <div className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center mb-3`}>
+              <c.icon size={18} className={c.color} />
+            </div>
+            <p className="text-2xl font-semibold text-primary">{c.value}</p>
+            <p className="text-xs text-muted mt-0.5">{c.label}</p>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -99,11 +269,16 @@ function UsersTab({ currentUserId }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
   const [deleting, setDeleting] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [changingRole, setChangingRole] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showDeleted, setShowDeleted] = useState(false);
 
-  const fetchUsers = (q = '') => {
+  const fetchUsers = (q = '', role = '', deleted = false) => {
     setLoading(true);
-    api.get('/admin/users', { params: { search: q } })
+    api.get('/admin/users', { params: { search: q, role: role || undefined, includeDeleted: deleted || undefined } })
       .then((res) => setUsers(res.data))
       .catch(() => toast.error('Failed to load users'))
       .finally(() => setLoading(false));
@@ -113,20 +288,45 @@ function UsersTab({ currentUserId }) {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchUsers(search);
+    fetchUsers(search, roleFilter, showDeleted);
   };
 
-  const handleDelete = async (id) => {
-    if (deleting) return;
-    setDeleting(id);
+  const handleRoleFilterChange = (role) => {
+    setRoleFilter(role);
+    fetchUsers(search, role, showDeleted);
+  };
+
+  const handleToggleDeleted = () => {
+    const next = !showDeleted;
+    setShowDeleted(next);
+    fetchUsers(search, roleFilter, next);
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    setDeleting(confirmDelete);
     try {
-      await api.delete(`/admin/users/${id}`);
+      await api.delete(`/admin/users/${confirmDelete}`);
       toast.success('User deleted');
-      setUsers((prev) => prev.filter((u) => u.id !== id));
+      setUsers((prev) => prev.filter((u) => u.id !== confirmDelete));
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to delete user');
     } finally {
       setDeleting(null);
+      setConfirmDelete(null);
+    }
+  };
+
+  const handleRoleChange = async (userId, newRole) => {
+    setChangingRole(userId);
+    try {
+      const res = await api.patch(`/admin/users/${userId}/role`, { role: newRole });
+      toast.success(`Role changed to ${newRole}`);
+      setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, role: res.data.role } : u));
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to change role');
+    } finally {
+      setChangingRole(null);
     }
   };
 
@@ -147,7 +347,7 @@ function UsersTab({ currentUserId }) {
 
   return (
     <>
-      <form onSubmit={handleSearch} className="flex gap-3 mb-6">
+      <form onSubmit={handleSearch} className="flex gap-3 mb-6 flex-wrap">
         <div className="relative flex-1 max-w-md">
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
           <input
@@ -158,8 +358,18 @@ function UsersTab({ currentUserId }) {
             className="w-full pl-10 pr-4 py-2.5 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors"
           />
         </div>
+        <SelectFilter value={roleFilter} onChange={handleRoleFilterChange} options={['Admin', 'Agent', 'Buyer']} placeholder="All Roles" />
         <button type="submit" className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors">
           Search
+        </button>
+        <button
+          type="button"
+          onClick={handleToggleDeleted}
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+            showDeleted ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-surface text-muted border border-border/50 hover:text-secondary'
+          }`}
+        >
+          {showDeleted ? 'Showing Deleted' : 'Show Deleted'}
         </button>
       </form>
 
@@ -169,34 +379,79 @@ function UsersTab({ currentUserId }) {
         <p className="text-center py-20 text-muted text-sm">No users found</p>
       ) : (
         <div className="space-y-3">
-          {users.map((u) => (
-            <div key={u.id} className="flex items-center gap-4 bg-white rounded-xl border border-border/50 p-4 hover:shadow-sm transition-shadow">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {u.avatar_url ? (
-                  <img src={u.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-xs font-semibold text-primary">{u.name?.charAt(0)?.toUpperCase()}</span>
+          {users.map((u) => {
+            const isDeleted = !!u.deletedAt;
+            return (
+              <div key={u.id} onClick={() => setSelectedUser(u)} className={`flex items-center gap-4 rounded-xl border p-4 transition-shadow cursor-pointer ${
+                isDeleted ? 'bg-red-50/50 border-red-200/50 opacity-70' : 'bg-white border-border/50 hover:shadow-sm'
+              }`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 ${isDeleted ? 'bg-red-100/50' : 'bg-primary/10'}`}>
+                  {u.avatar_url ? (
+                    <img src={u.avatar_url} alt="" className={`w-full h-full object-cover ${isDeleted ? 'grayscale' : ''}`} />
+                  ) : (
+                    <span className={`text-xs font-semibold ${isDeleted ? 'text-red-400' : 'text-primary'}`}>{u.name?.charAt(0)?.toUpperCase()}</span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className={`text-sm font-semibold truncate ${isDeleted ? 'text-red-400 line-through' : 'text-primary'}`}>{u.name}</p>
+                    {roleBadge(u.role)}
+                    {isDeleted && (
+                      <span className="text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-100 text-red-500">
+                        Deleted
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted truncate">{u.email}</p>
+                </div>
+                <p className="text-xs text-muted hidden sm:block">
+                  {isDeleted ? `Deleted ${formatDate(u.deletedAt)}` : formatDate(u.createdAt)}
+                </p>
+                {!isDeleted && u.role !== 'Admin' && u.id !== currentUserId && (
+                  <select
+                    value={u.role}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                    disabled={changingRole === u.id}
+                    className="text-xs px-2 py-1.5 rounded-lg border border-border/50 bg-surface disabled:opacity-50"
+                  >
+                    <option value="Buyer">Buyer</option>
+                    <option value="Agent">Agent</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                )}
+                {!isDeleted && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setConfirmDelete(u.id); }}
+                    disabled={u.id === currentUserId || u.role === 'Admin'}
+                    className="w-9 h-9 rounded-lg bg-surface flex items-center justify-center text-muted hover:text-red-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    title={u.id === currentUserId ? 'Cannot delete yourself' : u.role === 'Admin' ? 'Cannot delete admins' : 'Delete user'}
+                  >
+                    <Trash2 size={15} />
+                  </button>
                 )}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-primary truncate">{u.name}</p>
-                  {roleBadge(u.role)}
-                </div>
-                <p className="text-xs text-muted truncate">{u.email}</p>
-              </div>
-              <p className="text-xs text-muted hidden sm:block">{formatDate(u.createdAt)}</p>
-              <button
-                onClick={() => handleDelete(u.id)}
-                disabled={deleting === u.id || u.id === currentUserId}
-                className="w-9 h-9 rounded-lg bg-surface flex items-center justify-center text-muted hover:text-red-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                title={u.id === currentUserId ? 'Cannot delete yourself' : 'Delete user'}
-              >
-                <Trash2 size={15} />
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
+      )}
+
+      <ConfirmModal
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={handleDelete}
+        title="Delete User"
+        message="Are you sure you want to delete this user? This action cannot be undone."
+        confirmText="Delete"
+        loading={!!deleting}
+      />
+
+      {selectedUser && (
+        <UserProfilePanel
+          user={selectedUser}
+          onClose={() => setSelectedUser(null)}
+          onPropertyDeleted={() => {}}
+        />
       )}
     </>
   );
@@ -207,13 +462,16 @@ function PropertiesTab() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [deleting, setDeleting] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
-  const fetchProperties = (q = '', p = 1) => {
+  const fetchProperties = (q = '', p = 1, type = '', status = '') => {
     setLoading(true);
-    api.get('/admin/properties', { params: { search: q, page: p, limit: 20 } })
+    api.get('/admin/properties', { params: { search: q, page: p, limit: 20, type: type || undefined, status: status || undefined } })
       .then((res) => {
         setProperties(res.data.properties);
         setTotalPages(res.data.totalPages);
@@ -227,20 +485,31 @@ function PropertiesTab() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchProperties(search, 1);
+    fetchProperties(search, 1, typeFilter, statusFilter);
   };
 
-  const handleDelete = async (id) => {
-    if (deleting) return;
-    setDeleting(id);
+  const handleTypeChange = (type) => {
+    setTypeFilter(type);
+    fetchProperties(search, 1, type, statusFilter);
+  };
+
+  const handleStatusChange = (status) => {
+    setStatusFilter(status);
+    fetchProperties(search, 1, typeFilter, status);
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    setDeleting(confirmDelete);
     try {
-      await api.delete(`/admin/properties/${id}`);
+      await api.delete(`/admin/properties/${confirmDelete}`);
       toast.success('Property deleted');
-      setProperties((prev) => prev.filter((p) => p.id !== id));
+      setProperties((prev) => prev.filter((p) => p.id !== confirmDelete));
     } catch {
       toast.error('Failed to delete property');
     } finally {
       setDeleting(null);
+      setConfirmDelete(null);
     }
   };
 
@@ -260,7 +529,7 @@ function PropertiesTab() {
 
   return (
     <>
-      <form onSubmit={handleSearch} className="flex gap-3 mb-6">
+      <form onSubmit={handleSearch} className="flex gap-3 mb-6 flex-wrap">
         <div className="relative flex-1 max-w-md">
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
           <input
@@ -271,6 +540,8 @@ function PropertiesTab() {
             className="w-full pl-10 pr-4 py-2.5 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors"
           />
         </div>
+        <SelectFilter value={typeFilter} onChange={handleTypeChange} options={['House', 'Apartment', 'Villa', 'Commercial', 'Land']} placeholder="All Types" />
+        <SelectFilter value={statusFilter} onChange={handleStatusChange} options={['Available', 'Sold', 'Rented']} placeholder="All Statuses" />
         <button type="submit" className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors">
           Search
         </button>
@@ -305,7 +576,7 @@ function PropertiesTab() {
                   <p className="text-[10px] text-muted">{p.User?.email}</p>
                 </div>
                 <button
-                  onClick={() => handleDelete(p.id)}
+                  onClick={() => setConfirmDelete(p.id)}
                   disabled={deleting === p.id}
                   className="w-9 h-9 rounded-lg bg-surface flex items-center justify-center text-muted hover:text-red-500 transition-colors disabled:opacity-50"
                 >
@@ -316,10 +587,20 @@ function PropertiesTab() {
           </div>
 
           {totalPages > 1 && (
-            <Pagination page={page} totalPages={totalPages} onChange={(p) => fetchProperties(search, p)} />
+            <Pagination page={page} totalPages={totalPages} onChange={(p) => fetchProperties(search, p, typeFilter, statusFilter)} />
           )}
         </>
       )}
+
+      <ConfirmModal
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={handleDelete}
+        title="Delete Property"
+        message="Are you sure you want to delete this property? This action cannot be undone."
+        confirmText="Delete"
+        loading={!!deleting}
+      />
     </>
   );
 }
@@ -329,6 +610,9 @@ function TestimonialsTab() {
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [filter, setFilter] = useState('all');
+  const [actionLoading, setActionLoading] = useState(null);
 
   useEffect(() => {
     api.get('/admin/testimonials')
@@ -337,63 +621,166 @@ function TestimonialsTab() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleDelete = async (id) => {
-    if (deleting) return;
-    setDeleting(id);
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    setDeleting(confirmDelete);
     try {
-      await api.delete(`/admin/testimonials/${id}`);
+      await api.delete(`/admin/testimonials/${confirmDelete}`);
       toast.success('Testimonial deleted');
-      setTestimonials((prev) => prev.filter((t) => t.id !== id));
+      setTestimonials((prev) => prev.filter((t) => t.id !== confirmDelete));
     } catch {
       toast.error('Failed to delete testimonial');
     } finally {
       setDeleting(null);
+      setConfirmDelete(null);
+    }
+  };
+
+  const handleApprove = async (id) => {
+    setActionLoading(id);
+    try {
+      await api.patch(`/admin/testimonials/${id}/approve`);
+      toast.success('Testimonial approved');
+      setTestimonials((prev) => prev.map((t) => t.id === id ? { ...t, approved: true } : t));
+    } catch (err) {
+      console.error('Approve error:', err);
+      toast.error(err.response?.data?.error || 'Failed to approve testimonial');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReject = async (id) => {
+    setActionLoading(id);
+    try {
+      await api.patch(`/admin/testimonials/${id}/reject`);
+      toast.success('Testimonial rejected');
+      setTestimonials((prev) => prev.map((t) => t.id === id ? { ...t, approved: false } : t));
+    } catch (err) {
+      console.error('Reject error:', err);
+      toast.error(err.response?.data?.error || 'Failed to reject testimonial');
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
 
+  const filtered = testimonials.filter((t) => {
+    if (filter === 'approved') return t.approved === true;
+    if (filter === 'pending') return t.approved === false;
+    return true;
+  });
+
+  const approvedCount = testimonials.filter((t) => t.approved === true).length;
+  const pendingCount = testimonials.filter((t) => t.approved === false).length;
+
   if (loading) return <Spinner className="py-32" />;
-  if (testimonials.length === 0) return <p className="text-center py-20 text-muted text-sm">No testimonials found</p>;
 
   return (
-    <div className="space-y-3">
-      {testimonials.map((t) => (
-        <div key={t.id} className="bg-white rounded-xl border border-border/50 p-5 hover:shadow-sm transition-shadow">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {t.User?.avatar_url ? (
-                  <img src={t.User.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-xs font-semibold text-primary">{t.User?.name?.charAt(0)?.toUpperCase()}</span>
+    <>
+      <div className="flex gap-2 mb-6">
+        {[
+          { key: 'all', label: 'All', count: testimonials.length },
+          { key: 'pending', label: 'Pending', count: pendingCount },
+          { key: 'approved', label: 'Approved', count: approvedCount },
+        ].map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+              filter === f.key
+                ? 'bg-primary text-white'
+                : 'bg-surface text-muted hover:text-secondary'
+            }`}
+          >
+            {f.label}
+            <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full ${
+              filter === f.key ? 'bg-white/20' : 'bg-border/50'
+            }`}>
+              {f.count}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
+        <p className="text-center py-20 text-muted text-sm">No testimonials found</p>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((t) => (
+            <div key={t.id} className="bg-white rounded-xl border border-border/50 p-5 hover:shadow-sm transition-shadow">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {t.User?.avatar_url ? (
+                      <img src={t.User.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xs font-semibold text-primary">{t.User?.name?.charAt(0)?.toUpperCase()}</span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-primary">{t.User?.name || 'Unknown'}</p>
+                    <p className="text-xs text-muted">{t.User?.email}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+                  <span className={`text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                    t.approved ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                  }`}>
+                    {t.approved ? 'Approved' : 'Pending'}
+                  </span>
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star key={s} size={14} className={s <= t.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200'} />
+                    ))}
+                  </div>
+                  <span className="text-xs text-muted">{formatDate(t.createdAt)}</span>
+                </div>
+              </div>
+              <p className="mt-3 text-sm text-secondary leading-relaxed">{t.content}</p>
+              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/30">
+                {!t.approved && (
+                  <button
+                    onClick={() => handleApprove(t.id)}
+                    disabled={actionLoading === t.id}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                  >
+                    <CheckCircle size={13} /> Approve
+                  </button>
                 )}
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-primary">{t.User?.name || 'Unknown'}</p>
-                <p className="text-xs text-muted">{t.User?.email}</p>
+                {t.approved && (
+                  <button
+                    onClick={() => handleReject(t.id)}
+                    disabled={actionLoading === t.id}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors disabled:opacity-50"
+                  >
+                    <XCircle size={13} /> Reject
+                  </button>
+                )}
+                <button
+                  onClick={() => setConfirmDelete(t.id)}
+                  disabled={deleting === t.id}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-surface text-muted hover:text-red-500 transition-colors disabled:opacity-50 ml-auto"
+                >
+                  <Trash2 size={13} /> Delete
+                </button>
               </div>
             </div>
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <div className="flex gap-0.5">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} size={14} className={s <= t.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200'} />
-                ))}
-              </div>
-              <span className="text-xs text-muted">{formatDate(t.createdAt)}</span>
-              <button
-                onClick={() => handleDelete(t.id)}
-                disabled={deleting === t.id}
-                className="w-9 h-9 rounded-lg bg-surface flex items-center justify-center text-muted hover:text-red-500 transition-colors disabled:opacity-50"
-              >
-                <Trash2 size={15} />
-              </button>
-            </div>
-          </div>
-          <p className="mt-3 text-sm text-secondary leading-relaxed">{t.content}</p>
+          ))}
         </div>
-      ))}
-    </div>
+      )}
+
+      <ConfirmModal
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={handleDelete}
+        title="Delete Testimonial"
+        message="Are you sure you want to delete this testimonial? This action cannot be undone."
+        confirmText="Delete"
+        loading={!!deleting}
+      />
+    </>
   );
 }
 
