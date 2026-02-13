@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Menu, X, User, LogOut, LayoutDashboard, ChevronDown, Heart, Shield } from 'lucide-react';
+import { useMessages } from '../context/MessageContext';
+import { Menu, X, User, LogOut, LayoutDashboard, ChevronDown, Heart, Shield, MessageSquare } from 'lucide-react';
 
 export default function Navbar() {
   const { user, loading, logout } = useAuth();
+  const { unreadCount } = useMessages();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -58,6 +60,21 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-8">
             {navLink('/', 'Home')}
             {navLink('/properties', 'Properties')}
+            {user && (
+              <Link
+                to="/messages"
+                className={`text-sm font-medium transition-colors relative ${
+                  isActive('/messages')
+                    ? 'text-primary'
+                    : 'text-muted hover:text-primary'
+                }`}
+              >
+                Messages
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-3 w-2 h-2 rounded-full bg-accent" />
+                )}
+              </Link>
+            )}
             {user?.role === 'Agent' && navLink('/dashboard', 'Dashboard')}
             {user?.role === 'Admin' && navLink('/admin', 'Admin')}
           </div>
@@ -108,6 +125,18 @@ export default function Navbar() {
                       >
                         <User size={15} className="text-muted" />
                         Profile
+                      </Link>
+                      <Link
+                        to="/messages"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-secondary hover:bg-surface transition-colors"
+                      >
+                        <MessageSquare size={15} className="text-muted" />
+                        Messages
+                        {unreadCount > 0 && (
+                          <span className="ml-auto text-[10px] font-bold bg-accent text-white w-5 h-5 rounded-full flex items-center justify-center">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </span>
+                        )}
                       </Link>
                       <Link
                         to="/saved"
@@ -210,6 +239,17 @@ export default function Navbar() {
 
               <Link to="/profile" className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-secondary rounded-xl hover:bg-surface">
                 <User size={16} className="text-muted" /> Profile
+              </Link>
+              <Link
+                to="/messages"
+                className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-secondary rounded-xl hover:bg-surface"
+              >
+                <MessageSquare size={16} className="text-muted" /> Messages
+                {unreadCount > 0 && (
+                  <span className="ml-auto text-[10px] font-bold bg-accent text-white w-5 h-5 rounded-full flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </Link>
               <Link to="/saved" className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-secondary rounded-xl hover:bg-surface">
                 <Heart size={16} className="text-muted" /> Saved
