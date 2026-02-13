@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   MapPin, BedDouble, Maximize, Building2, Tag, Phone, Mail, User,
-  ChevronLeft, ChevronRight, ArrowLeft, Heart, Star, Trash2
+  ChevronLeft, ChevronRight, ArrowLeft, Heart, Star, Trash2, MessageSquare
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
@@ -18,6 +18,8 @@ export default function PropertyDetail() {
   const [currentImg, setCurrentImg] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
+
+  const [contactingAgent, setContactingAgent] = useState(false);
 
   // Agent rating & reviews
   const [agentStats, setAgentStats] = useState(null);
@@ -111,6 +113,28 @@ export default function PropertyDetail() {
       toast.success(res.data.saved ? 'Property saved' : 'Property removed from saved');
     } catch {
       toast.error('Failed to update favorite');
+    }
+  };
+
+  const handleContactAgent = async () => {
+    if (!user) return navigate('/login');
+    if (contactingAgent) return;
+    setContactingAgent(true);
+    try {
+      const res = await api.post('/conversations', {
+        property_id: parseInt(id),
+        agent_id: property.agent_id,
+      });
+      const convId = res.data.conversation.id;
+      if (user.role === 'Agent') {
+        navigate(`/dashboard?tab=messages&conversation=${convId}`);
+      } else {
+        navigate(`/messages?conversation=${convId}`);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to start conversation');
+    } finally {
+      setContactingAgent(false);
     }
   };
 
@@ -446,12 +470,16 @@ export default function PropertyDetail() {
                   )}
                 </div>
 
-                <a
-                  href={`mailto:${agent.email}?subject=Inquiry about property in ${property.location}`}
-                  className="mt-6 block w-full bg-primary text-white text-center py-3 rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors"
-                >
-                  Contact Agent
-                </a>
+                {!isOwner && (
+                  <button
+                    onClick={handleContactAgent}
+                    disabled={contactingAgent}
+                    className="mt-6 w-full bg-primary text-white py-3 rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    <MessageSquare size={16} />
+                    {contactingAgent ? 'Opening chat...' : 'Contact Agent'}
+                  </button>
+                )}
 
                 {agent.phone && (
                   <a

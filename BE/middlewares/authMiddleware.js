@@ -19,6 +19,7 @@ if(!header.startsWith('Bearer '))
     const user=await User.findByPk(payload.id,{
         attributes:['id','name','email','role','phone','avatar_url','createdAt'],}
     )
+    if(!user) return res.status(401).json({error:'User not found'})
     req.user=user;
     next()
 }

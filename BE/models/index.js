@@ -6,6 +6,8 @@ const Favorite=require('./Favorite')
 const Testimonial=require('./Testimonial')
 const Visitor=require('./Visitor')
 const AgentReview=require('./AgentReview')
+const Conversation=require('./Conversation')
+const Message=require('./Message')
 
 User.hasMany(Property,{foreignKey:'agent_id',onDelete:'CASCADE'});
 Property.belongsTo(User,{foreignKey:'agent_id'})
@@ -34,6 +36,17 @@ User.hasMany(AgentReview,{foreignKey:'reviewer_id',as:'GivenReviews',onDelete:'C
 AgentReview.belongsTo(User,{foreignKey:'agent_id',as:'Agent'})
 AgentReview.belongsTo(User,{foreignKey:'reviewer_id',as:'Reviewer'})
 
-module.exports={User,Property,AiAnalysis,PropertyImage,Favorite,Testimonial,Visitor,AgentReview};
+// Conversation associations
+User.hasMany(Conversation,{foreignKey:'buyer_id',as:'BuyerConversations',onDelete:'CASCADE'})
+User.hasMany(Conversation,{foreignKey:'agent_id',as:'AgentConversations',onDelete:'CASCADE'})
+Conversation.belongsTo(User,{foreignKey:'buyer_id',as:'Buyer'})
+Conversation.belongsTo(User,{foreignKey:'agent_id',as:'Agent'})
+Property.hasMany(Conversation,{foreignKey:'property_id',onDelete:'CASCADE'})
+Conversation.belongsTo(Property,{foreignKey:'property_id'})
 
+// Message associations
+Conversation.hasMany(Message,{foreignKey:'conversation_id',onDelete:'CASCADE'})
+Message.belongsTo(Conversation,{foreignKey:'conversation_id'})
+Message.belongsTo(User,{foreignKey:'sender_id',as:'Sender'})
 
+module.exports={User,Property,AiAnalysis,PropertyImage,Favorite,Testimonial,Visitor,AgentReview,Conversation,Message};
