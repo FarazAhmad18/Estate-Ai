@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Plus, Building2, Eye, Pencil, Trash2, Camera,
   User, TrendingUp, CalendarDays, Home, CheckCircle2, Clock,
@@ -13,12 +13,13 @@ import Spinner from '../components/Spinner';
 export default function Dashboard() {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [tab, setTab] = useState('listings');
+  const [tab, setTab] = useState(() => searchParams.get('tab') || 'listings');
   const [deleting, setDeleting] = useState(null);
   const [statusFilter, setStatusFilter] = useState('All');
   const [statusMenu, setStatusMenu] = useState(null);

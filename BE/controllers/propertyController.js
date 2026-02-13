@@ -2,7 +2,7 @@ const { Op, fn, col } = require('sequelize')
 const Property=require('../models/Property')
 const User=require('../models/User')
 const PropertyImage=require('../models/PropertyImage')
-const {AgentReview,Favorite}=require('../models/index')
+const {AgentReview,Favorite,Conversation,Message}=require('../models/index')
 
 exports.search=async(req,res)=>{
     try{
@@ -99,10 +99,37 @@ exports.updateProperty=async(req,res)=>{
         property.bedrooms=bedrooms??property.bedrooms
         property.area=area??property.area
         property.description=description??property.description
+        const oldStatus=property.status
         if(req.body.status && ['Available','Sold','Rented'].includes(req.body.status)){
             property.status=req.body.status
         }
         await property.save()
+
+        // Send system message to all conversations when property is sold/rented
+        // Wrapped in its own try/catch so a failure here doesn't break the property update response
+        if(property.status!==oldStatus && (property.status==='Sold'||property.status==='Rented')){
+            try{
+                const statusLabel=property.status==='Sold'?'sold':'rented'
+                const systemBody=`This property has been ${statusLabel}. It is no longer available.`
+                const conversations=await Conversation.findAll({where:{property_id:id}})
+                const io=req.app.get('io')
+                for(const conv of conversations){
+                    const msg=await Message.create({
+                        conversation_id:conv.id,
+                        sender_id:null,
+                        body:systemBody,
+                        read:false,
+                    })
+                    if(io){
+                        const payload={message:msg.toJSON(),conversationId:conv.id}
+                        io.to(`user_${conv.buyer_id}`).to(`user_${conv.agent_id}`).emit('new_message',payload)
+                    }
+                }
+            }catch(msgErr){
+                console.error("Failed to send system message for status change:",msgErr)
+            }
+        }
+
     return res.status(200).json(property)
     }
     catch(e){
@@ -116,6 +143,18 @@ const id=req.params.id
 const property=await Property.findByPk(id)
 if(!property)return res.status(404).json({error:'Property not found'})
 if(property.agent_id!=req.user.id)return res.status(403).json({error:'You do not own this property'})
+
+// Notify conversation participants before cascade delete
+const conversations=await Conversation.findAll({where:{property_id:id}})
+const io=req.app.get('io')
+if(io){
+  conversations.forEach(conv=>{
+    io.to(`user_${conv.buyer_id}`).to(`user_${conv.agent_id}`).emit('conversation_deleted',{
+      conversationId:conv.id,
+    })
+  })
+}
+
 await property.destroy()
 res.status(200).json({msg:'Property Deleted Successfully'})
     }
