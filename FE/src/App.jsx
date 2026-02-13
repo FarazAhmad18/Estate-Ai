@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
+import { MessageProvider } from './context/MessageContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -19,6 +20,7 @@ import BuyerProfile from './pages/BuyerProfile';
 import SavedProperties from './pages/SavedProperties';
 import AdminDashboard from './pages/AdminDashboard';
 import AgentProfile from './pages/AgentProfile';
+import Messages from './pages/Messages';
 
 const AUTH_ROUTES = ['/login', '/register', '/verify-otp', '/forgot-password', '/reset-password'];
 
@@ -26,6 +28,7 @@ function AppContent() {
   const { pathname } = useLocation();
   const isAuthPage = AUTH_ROUTES.includes(pathname);
   const isAdminPage = pathname === '/admin';
+  const isMessagesPage = pathname === '/messages';
 
   return (
     <>
@@ -103,9 +106,17 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/messages"
+              element={
+                <ProtectedRoute>
+                  <Messages />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </main>
-        {!isAuthPage && !isAdminPage && <Footer />}
+        {!isAuthPage && !isAdminPage && !isMessagesPage && <Footer />}
       </div>
     </>
   );
@@ -115,7 +126,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppContent />
+        <MessageProvider>
+          <AppContent />
+        </MessageProvider>
       </AuthProvider>
     </BrowserRouter>
   );
