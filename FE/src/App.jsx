@@ -52,9 +52,9 @@ function AppContent() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/verify-otp" element={<VerifyOtp />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+            {/* <Route path="/verify-otp" element={<VerifyOtp />} /> */}
+            {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
+            {/* <Route path="/reset-password" element={<ResetPassword />} /> */}
             <Route path="/properties" element={<Properties />} />
             <Route path="/properties/:id" element={<PropertyDetail />} />
             <Route path="/agents/:id" element={<AgentProfile />} />

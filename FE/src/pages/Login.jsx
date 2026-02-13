@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff } from 'lucide-react';
 import heroInterior from '../assets/hero-interior.png';
@@ -11,7 +12,7 @@ export default function Login() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
 
   const validate = () => {
@@ -29,14 +30,9 @@ export default function Login() {
     setLoading(true);
     setErrors({});
     try {
-      const data = await login(email, password);
-      if (data.token) {
-        toast.success('Logged in!');
-        navigate('/');
-      } else {
-        toast.success('Verification code sent!');
-        navigate('/verify-otp', { state: { email: data.email } });
-      }
+      await login(email, password);
+      toast.success('Logged in!');
+      navigate('/');
     } catch (err) {
       const msg = err.response?.data?.error || 'Invalid credentials';
       setErrors({ form: msg });
@@ -116,11 +112,11 @@ export default function Login() {
               {errors.password && <p className="mt-1.5 text-xs text-red-500">{errors.password}</p>}
             </div>
 
-            <div className="flex justify-end">
+            {/* <div className="flex justify-end">
               <Link to="/forgot-password" className="text-xs text-accent font-medium hover:underline">
                 Forgot password?
               </Link>
-            </div>
+            </div> */}
 
             <button
               type="submit"
@@ -130,6 +126,32 @@ export default function Login() {
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
+
+          <div className="my-6 flex items-center gap-3">
+            <div className="flex-1 h-px bg-border/50" />
+            <span className="text-xs text-muted">or</span>
+            <div className="flex-1 h-px bg-border/50" />
+          </div>
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={async (response) => {
+                try {
+                  await googleLogin(response.credential);
+                  toast.success('Logged in!');
+                  navigate('/');
+                } catch (err) {
+                  const msg = err.response?.data?.error || 'Google login failed';
+                  setErrors({ form: msg });
+                }
+              }}
+              onError={() => setErrors({ form: 'Google login failed' })}
+              shape="pill"
+              size="large"
+              width="100%"
+              text="signin_with"
+            />
+          </div>
 
           <p className="mt-8 text-center text-sm text-muted">
             Don&apos;t have an account?{' '}

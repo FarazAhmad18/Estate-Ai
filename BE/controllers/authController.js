@@ -4,6 +4,9 @@ const crypto = require('crypto');
 const { signToken } = require('../utils/jwt');
 const { sendOtpEmail, sendResetEmail } = require('../utils/email');
 const { validatePassword } = require('../utils/validation');
+const { OAuth2Client } = require('google-auth-library');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 exports.register = async (req, res) => {
   try {
@@ -25,17 +28,8 @@ exports.register = async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
     const user = await User.create({ name, email, password: hash, role: safeRole });
 
-    // Generate 6-digit OTP
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
-    const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
-
-    user.otpCode = otpHash;
-    user.otpExpiry = new Date(Date.now() + 50 * 1000); // 50 seconds
-    await user.save();
-
-    await sendOtpEmail(user.email, otp, user.name);
-
-    return res.status(200).json({ message: 'OTP sent to your email', email: user.email });
+    const token = signToken(user);
+    return res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
     console.error('Register error:', err);
     res.status(500).json({ error: 'Server error during registration' });
@@ -53,23 +47,8 @@ exports.login = async (req, res) => {
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return res.status(401).json({ error: 'Invalid email or password' });
 
-    // Skip OTP for Admin users — issue token directly
-    if (user.role === 'Admin') {
-      const token = signToken(user);
-      return res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
-    }
-
-    // Generate 6-digit OTP
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
-    const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
-
-    user.otpCode = otpHash;
-    user.otpExpiry = new Date(Date.now() + 50 * 1000); // 50 seconds
-    await user.save();
-
-    await sendOtpEmail(user.email, otp, user.name);
-
-    res.status(200).json({ message: 'OTP sent to your email', email: user.email });
+    const token = signToken(user);
+    res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (e) {
     console.error('Login error:', e);
     res.status(500).json({ error: 'Server error during login' });
@@ -240,19 +219,69 @@ exports.changePassword = async (req, res) => {
 exports.deleteAccount = async (req, res) => {
   try {
     const { password } = req.body;
-    if (!password) return res.status(400).json({ error: 'Password is required' });
-
     const user = await User.findByPk(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) return res.status(403).json({ error: 'Incorrect password' });
+    // Skip password check for Google-authenticated accounts
+    if (!user.googleId) {
+      if (!password) return res.status(400).json({ error: 'Password is required' });
+      const ok = await bcrypt.compare(password, user.password);
+      if (!ok) return res.status(403).json({ error: 'Incorrect password' });
+    }
 
     await user.destroy();
     res.status(200).json({ message: 'Account deleted' });
   } catch (err) {
     console.error('Delete account error:', err);
     res.status(500).json({ error: 'Server error deleting account' });
+  }
+};
+
+exports.googleAuth = async (req, res) => {
+  try {
+    const { credential, role } = req.body;
+    if (!credential) return res.status(400).json({ error: 'Google credential is required' });
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const { email, name, picture, sub: googleId } = ticket.getPayload();
+
+    let user = await User.findOne({ where: { email }, paranoid: false });
+
+    if (user && user.deletedAt) {
+      // Soft-deleted account — remove it so we can create fresh
+      await user.destroy({ force: true });
+      user = null;
+    }
+
+    if (!user) {
+      // New user — create account
+      const allowedRoles = ['Buyer', 'Agent'];
+      const safeRole = allowedRoles.includes(role) ? role : 'Buyer';
+      const randomPw = crypto.randomBytes(32).toString('hex');
+      const hash = await bcrypt.hash(randomPw, 10);
+      user = await User.create({
+        name,
+        email,
+        password: hash,
+        role: safeRole,
+        avatar_url: picture,
+        googleId,
+      });
+    } else if (!user.googleId) {
+      // Existing email/password account — link Google to it
+      user.googleId = googleId;
+      if (!user.avatar_url && picture) user.avatar_url = picture;
+      await user.save();
+    }
+
+    const token = signToken(user);
+    res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+  } catch (err) {
+    console.error('Google auth error:', err);
+    res.status(500).json({ error: 'Google authentication failed' });
   }
 };
 

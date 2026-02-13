@@ -33,13 +33,10 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const res = await api.post('/login', { email, password });
-    // Admin users get token directly (no OTP)
-    if (res.data.token) {
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
-      setUser(res.data.user);
-      connectSocket(res.data.token);
-    }
+    localStorage.setItem('token', res.data.token);
+    localStorage.setItem('user', JSON.stringify(res.data.user));
+    setUser(res.data.user);
+    connectSocket(res.data.token);
     return res.data;
   };
 
@@ -59,7 +56,20 @@ export function AuthProvider({ children }) {
 
   const register = async (name, email, password, role) => {
     const res = await api.post('/register', { name, email, password, role });
-    return res.data; // { message, email } — no token yet, OTP required
+    localStorage.setItem('token', res.data.token);
+    localStorage.setItem('user', JSON.stringify(res.data.user));
+    setUser(res.data.user);
+    connectSocket(res.data.token);
+    return res.data;
+  };
+
+  const googleLogin = async (credential, role) => {
+    const res = await api.post('/google-auth', { credential, role });
+    localStorage.setItem('token', res.data.token);
+    localStorage.setItem('user', JSON.stringify(res.data.user));
+    setUser(res.data.user);
+    connectSocket(res.data.token);
+    return res.data;
   };
 
   const logout = () => {
@@ -75,7 +85,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, verifyOtp, resendOtp, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, login, verifyOtp, resendOtp, register, googleLogin, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
