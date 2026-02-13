@@ -1,4 +1,4 @@
-const User=require('./user')
+const User=require('./User')
 const Property= require('./Property')
 const AiAnalysis=require('./AiAnalysis')
 const PropertyImage=require('./PropertyImage')
