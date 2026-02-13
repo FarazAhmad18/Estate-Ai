@@ -1,5 +1,6 @@
 .claude/
 BE/.env
 BE/node_modules/
+FE/.env
 nul
 recom.txt

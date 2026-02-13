@@ -1,6 +1,10 @@
 const { Resend } = require('resend');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend;
+function getResend() {
+  if (!resend) resend = new Resend(process.env.RESEND_API_KEY);
+  return resend;
+}
 
 const fromAddress = process.env.EMAIL_FROM || 'EstateAI <onboarding@resend.dev>';
 
@@ -20,7 +24,7 @@ async function sendOtpEmail(toEmail, otp, userName) {
     </div>
   `;
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: fromAddress,
     to: toEmail,
     subject: `${otp} is your EstateAI verification code`,
@@ -46,7 +50,7 @@ async function sendResetEmail(toEmail, resetUrl, userName) {
     </div>
   `;
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: fromAddress,
     to: toEmail,
     subject: 'Reset your EstateAI password',
