@@ -1,14 +1,8 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+const fromAddress = process.env.EMAIL_FROM || 'EstateAI <onboarding@resend.dev>';
 
 async function sendOtpEmail(toEmail, otp, userName) {
   const html = `
@@ -26,8 +20,8 @@ async function sendOtpEmail(toEmail, otp, userName) {
     </div>
   `;
 
-  await transporter.sendMail({
-    from: `"EstateAI" <${process.env.SMTP_USER}>`,
+  await resend.emails.send({
+    from: fromAddress,
     to: toEmail,
     subject: `${otp} is your EstateAI verification code`,
     html,
@@ -52,8 +46,8 @@ async function sendResetEmail(toEmail, resetUrl, userName) {
     </div>
   `;
 
-  await transporter.sendMail({
-    from: `"EstateAI" <${process.env.SMTP_USER}>`,
+  await resend.emails.send({
+    from: fromAddress,
     to: toEmail,
     subject: 'Reset your EstateAI password',
     html,
