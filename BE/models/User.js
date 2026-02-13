@@ -33,6 +33,22 @@ allowNull:false,
         type:DataTypes.STRING,
         allowNull:true,
     },
+    resetToken:{
+        type:DataTypes.STRING,
+        allowNull:true,
+    },
+    resetTokenExpiry:{
+        type:DataTypes.DATE,
+        allowNull:true,
+    },
+    otpCode:{
+        type:DataTypes.STRING,
+        allowNull:true,
+    },
+    otpExpiry:{
+        type:DataTypes.DATE,
+        allowNull:true,
+    },
 
 },{
     tableName:'users',

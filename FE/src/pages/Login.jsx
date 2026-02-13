@@ -10,18 +10,31 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const validate = () => {
+    const errs = {};
+    if (!email) errs.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(email)) errs.email = 'Enter a valid email';
+    if (!password) errs.password = 'Password is required';
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
     setLoading(true);
+    setErrors({});
     try {
       const data = await login(email, password);
-      toast.success('Welcome back!');
-      navigate(data.user.role === 'Agent' ? '/dashboard' : '/');
+      toast.success('Verification code sent!');
+      navigate('/verify-otp', { state: { email: data.email } });
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Invalid credentials');
+      const msg = err.response?.data?.error || 'Invalid credentials';
+      setErrors({ form: msg });
     } finally {
       setLoading(false);
     }
@@ -54,6 +67,12 @@ export default function Login() {
             <p className="mt-2 text-sm text-muted">Sign in to your account</p>
           </div>
 
+          {errors.form && (
+            <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+              {errors.form}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-xs font-medium text-secondary mb-2">Email</label>
@@ -61,10 +80,12 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors"
+                className={`w-full px-4 py-3 bg-surface rounded-xl text-sm border transition-colors ${
+                  errors.email ? 'border-red-400' : 'border-border/50 focus:border-accent'
+                }`}
                 placeholder="you@example.com"
               />
+              {errors.email && <p className="mt-1.5 text-xs text-red-500">{errors.email}</p>}
             </div>
 
             <div>
@@ -74,8 +95,9 @@ export default function Login() {
                   type={showPw ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors pr-10"
+                  className={`w-full px-4 py-3 bg-surface rounded-xl text-sm border transition-colors pr-10 ${
+                    errors.password ? 'border-red-400' : 'border-border/50 focus:border-accent'
+                  }`}
                   placeholder="Enter your password"
                 />
                 <button
@@ -86,6 +108,13 @@ export default function Login() {
                   {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {errors.password && <p className="mt-1.5 text-xs text-red-500">{errors.password}</p>}
+            </div>
+
+            <div className="flex justify-end">
+              <Link to="/forgot-password" className="text-xs text-accent font-medium hover:underline">
+                Forgot password?
+              </Link>
             </div>
 
             <button

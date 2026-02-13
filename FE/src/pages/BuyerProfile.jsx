@@ -1,14 +1,28 @@
 import { useState, useEffect } from 'react';
-import { User, Camera, Mail, Phone, Shield } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { User, Camera, Mail, Phone, Shield, Lock, Trash2, X, Eye, EyeOff } from 'lucide-react';
+import PasswordStrengthIndicator from '../components/PasswordStrengthIndicator';
+import PasswordRequirements from '../components/PasswordRequirements';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 export default function BuyerProfile() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState({ name: '', email: '', phone: '' });
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const [changingPw, setChangingPw] = useState(false);
+  const [showChangePw, setShowChangePw] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [showDeletePw, setShowDeletePw] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -27,6 +41,44 @@ export default function BuyerProfile() {
       toast.error(err.response?.data?.error || 'Failed to update');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (pwForm.newPassword !== pwForm.confirmPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+    setChangingPw(true);
+    try {
+      await api.put('/profile/password', {
+        currentPassword: pwForm.currentPassword,
+        newPassword: pwForm.newPassword,
+      });
+      toast.success('Password changed successfully');
+      setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to change password');
+    } finally {
+      setChangingPw(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) return;
+    setDeleting(true);
+    try {
+      await api.delete('/profile', { data: { password: deletePassword } });
+      logout();
+      setShowDeleteModal(false);
+      toast.success('Account deleted successfully', { duration: 3000 });
+      await new Promise((r) => setTimeout(r, 2500));
+      navigate('/', { replace: true });
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to delete account');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -127,9 +179,8 @@ export default function BuyerProfile() {
               <input
                 type="email"
                 value={profile.email}
-                onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                required
-                className="w-full px-4 py-3 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors"
+                disabled
+                className="w-full px-4 py-3 bg-surface rounded-xl text-sm border border-border/50 text-muted cursor-not-allowed"
               />
             </div>
             <div>
@@ -151,7 +202,162 @@ export default function BuyerProfile() {
             </button>
           </form>
         </div>
+
+        {/* Change Password */}
+        <div className="mt-12 pt-8 border-t border-border/50">
+          <button
+            type="button"
+            onClick={() => { setShowChangePw(!showChangePw); if (showChangePw) setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' }); }}
+            className="flex items-center gap-2 text-lg font-semibold text-primary hover:text-accent transition-colors"
+          >
+            <Lock size={18} />
+            Change Password
+            <span className="text-sm font-normal text-muted ml-1">{showChangePw ? '(hide)' : '(click to expand)'}</span>
+          </button>
+          {showChangePw && (
+          <form onSubmit={handleChangePassword} className="space-y-5 mt-5">
+            <div>
+              <label className="block text-xs font-medium text-secondary mb-2">Current Password</label>
+              <div className="relative">
+                <input
+                  type={showCurrentPw ? 'text' : 'password'}
+                  value={pwForm.currentPassword}
+                  onChange={(e) => setPwForm({ ...pwForm, currentPassword: e.target.value })}
+                  required
+                  className="w-full px-4 py-3 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors pr-10"
+                  placeholder="Enter current password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPw(!showCurrentPw)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-secondary"
+                >
+                  {showCurrentPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-secondary mb-2">New Password</label>
+              <div className="relative">
+                <input
+                  type={showNewPw ? 'text' : 'password'}
+                  value={pwForm.newPassword}
+                  onChange={(e) => setPwForm({ ...pwForm, newPassword: e.target.value })}
+                  required
+                  className="w-full px-4 py-3 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors pr-10"
+                  placeholder="Enter new password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPw(!showNewPw)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-secondary"
+                >
+                  {showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              <PasswordStrengthIndicator password={pwForm.newPassword} />
+              <PasswordRequirements password={pwForm.newPassword} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-secondary mb-2">Confirm New Password</label>
+              <div className="relative">
+                <input
+                  type={showConfirmPw ? 'text' : 'password'}
+                  value={pwForm.confirmPassword}
+                  onChange={(e) => setPwForm({ ...pwForm, confirmPassword: e.target.value })}
+                  required
+                  className="w-full px-4 py-3 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors pr-10"
+                  placeholder="Confirm new password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPw(!showConfirmPw)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-secondary"
+                >
+                  {showConfirmPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              {pwForm.confirmPassword && pwForm.newPassword !== pwForm.confirmPassword && (
+                <p className="mt-1.5 text-xs text-red-500">Passwords do not match</p>
+              )}
+            </div>
+            <button
+              type="submit"
+              disabled={changingPw || !pwForm.currentPassword || !pwForm.newPassword || !pwForm.confirmPassword || pwForm.newPassword !== pwForm.confirmPassword}
+              className="bg-primary text-white px-8 py-3 rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {changingPw ? 'Changing...' : 'Change Password'}
+            </button>
+          </form>
+          )}
+        </div>
+
+        {/* Delete Account */}
+        <div className="mt-12 pt-8 border-t border-border/50">
+          <h3 className="text-lg font-semibold text-red-600 mb-2">Danger Zone</h3>
+          <p className="text-sm text-muted mb-4">
+            Permanently delete your account and all associated data. This action cannot be undone.
+          </p>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-200 hover:bg-red-100 transition-colors"
+          >
+            <Trash2 size={16} />
+            Delete Account
+          </button>
+        </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md mx-4 shadow-xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-primary">Delete Account</h3>
+              <button
+                onClick={() => { setShowDeleteModal(false); setDeletePassword(''); setShowDeletePw(false); }}
+                className="text-muted hover:text-secondary"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <p className="text-sm text-muted mb-6">
+              This will permanently delete your account, properties, favorites, and all associated data. Enter your password to confirm.
+            </p>
+            <div className="relative mb-6">
+              <input
+                type={showDeletePw ? 'text' : 'password'}
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                placeholder="Enter your password"
+                className="w-full px-4 py-3 bg-surface rounded-xl text-sm border border-border/50 focus:border-red-400 transition-colors pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowDeletePw(!showDeletePw)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-secondary"
+              >
+                {showDeletePw ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowDeleteModal(false); setDeletePassword(''); setShowDeletePw(false); }}
+                className="flex-1 px-4 py-3 bg-surface text-secondary rounded-xl text-sm font-medium border border-border/50 hover:bg-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={!deletePassword || deleting}
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {deleting ? 'Deleting...' : 'Delete My Account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,6 +7,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import VerifyOtp from './pages/VerifyOtp';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Properties from './pages/Properties';
 import PropertyDetail from './pages/PropertyDetail';
 import Dashboard from './pages/Dashboard';
@@ -17,7 +20,7 @@ import SavedProperties from './pages/SavedProperties';
 import AdminDashboard from './pages/AdminDashboard';
 import AgentProfile from './pages/AgentProfile';
 
-const AUTH_ROUTES = ['/login', '/register'];
+const AUTH_ROUTES = ['/login', '/register', '/verify-otp', '/forgot-password', '/reset-password'];
 
 function AppContent() {
   const { pathname } = useLocation();
@@ -45,6 +48,9 @@ function AppContent() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/verify-otp" element={<VerifyOtp />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/properties" element={<Properties />} />
             <Route path="/properties/:id" element={<PropertyDetail />} />
             <Route path="/agents/:id" element={<AgentProfile />} />
