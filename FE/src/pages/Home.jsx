@@ -468,22 +468,23 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featured.map((property) => (
-                <PropertyCard
-                  key={property.id}
-                  property={property}
-                  isFavorited={favoriteIds.has(property.id)}
-                  onToggleFavorite={handleToggleFavorite}
-                />
+              {featured.map((property, index) => (
+                <div key={property.id} className={index >= 3 ? 'hidden md:block' : ''}>
+                  <PropertyCard
+                    property={property}
+                    isFavorited={favoriteIds.has(property.id)}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
+                </div>
               ))}
             </div>
 
-            <div className="mt-10 text-center sm:hidden">
+            <div className="mt-8 text-center md:hidden">
               <Link
                 to="/properties"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-accent"
+                className="inline-flex items-center gap-2 text-white px-7 py-3 rounded-full text-sm font-semibold btn-primary"
               >
-                View all properties <ArrowRight size={14} />
+                View All Properties <ArrowRight size={14} />
               </Link>
             </div>
           </div>
