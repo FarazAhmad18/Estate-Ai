@@ -117,9 +117,9 @@ export default function ChatBubble() {
     <>
       {/* Chat Panel */}
       {isOpen && (
-        <div className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[400px] h-[500px] sm:h-[560px] bg-white rounded-2xl shadow-2xl shadow-black/15 border border-border/60 flex flex-col overflow-hidden animate-fade-in-up">
+        <div className="fixed z-50 bg-white shadow-2xl shadow-black/15 border border-border/60 flex flex-col overflow-hidden animate-fade-in-up inset-0 sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[400px] sm:h-[560px] sm:rounded-2xl">
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border/40 bg-gradient-to-r from-accent to-violet-500">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border/40" style={{ background: 'linear-gradient(to right, var(--color-accent, #3b82f6), #8b5cf6)' }}>
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                 <Bot size={16} className="text-white" />
