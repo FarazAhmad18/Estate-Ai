@@ -608,6 +608,106 @@ export default function Home() {
         </div>
       </section>
 
+      {/* In-App Messaging Banner */}
+      <section className="py-20 sm:py-24 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="relative rounded-3xl border border-border/50 overflow-hidden" style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%)' }}>
+            <div className="absolute top-0 right-0 w-80 h-80 bg-accent/[0.06] rounded-full blur-[100px]" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-500/[0.05] rounded-full blur-[80px]" />
+
+            <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center px-8 sm:px-12 py-12 sm:py-16">
+              {/* Left - Content */}
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/[0.08] rounded-full text-xs font-semibold text-accent mb-5 border border-accent/10">
+                  <MessageSquare size={12} />
+                  Built-in Messaging
+                </div>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight">
+                  Talk directly with <span className="gradient-text">agents</span>
+                </h2>
+                <p className="mt-4 text-muted text-sm sm:text-base leading-relaxed max-w-md">
+                  No need to share phone numbers or switch to another app. Message agents directly on EstateAI — ask questions, negotiate, and close deals all in one place.
+                </p>
+                <div className="mt-8 space-y-4">
+                  {[
+                    { icon: MessageSquare, text: 'Real-time messaging with agents', desc: 'Instant chat on any listing' },
+                    { icon: Shield, text: 'Privacy first — no phone needed', desc: 'Your number stays private' },
+                    { icon: Zap, text: 'Get notified on new replies', desc: 'Never miss a response' },
+                  ].map((item) => (
+                    <div key={item.text} className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center flex-shrink-0 shadow-sm border border-border/40">
+                        <item.icon size={16} className="text-accent" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-primary">{item.text}</p>
+                        <p className="text-xs text-muted mt-0.5">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-10">
+                  <Link
+                    to="/properties"
+                    className="inline-flex items-center gap-2 text-white px-7 py-3 rounded-full text-sm font-semibold btn-primary"
+                  >
+                    Browse Properties <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Right - Mock chat preview */}
+              <div className="hidden lg:block">
+                <div className="bg-white rounded-2xl shadow-xl shadow-black/[0.08] border border-border/50 overflow-hidden max-w-sm mx-auto">
+                  {/* Chat header */}
+                  <div className="px-5 py-4 border-b border-border/40 flex items-center gap-3" style={{ background: 'linear-gradient(to right, var(--color-accent, #3b82f6), #8b5cf6)' }}>
+                    <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
+                      <Users size={16} className="text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white">Ahmed Khan</p>
+                      <p className="text-[10px] text-white/70">Property Agent</p>
+                    </div>
+                    <div className="ml-auto w-2.5 h-2.5 rounded-full bg-green-400 ring-2 ring-white/20" />
+                  </div>
+                  {/* Chat messages */}
+                  <div className="px-4 py-5 space-y-3">
+                    <div className="flex justify-start">
+                      <div className="bg-surface text-primary text-sm px-4 py-2.5 rounded-2xl rounded-bl-md max-w-[80%]">
+                        Hi! I'm interested in the DHA Phase 5 villa. Is it still available?
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <div className="text-white text-sm px-4 py-2.5 rounded-2xl rounded-br-md max-w-[80%]" style={{ background: 'var(--color-accent, #3b82f6)' }}>
+                        Yes, it's available! Would you like to schedule a visit this weekend?
+                      </div>
+                    </div>
+                    <div className="flex justify-start">
+                      <div className="bg-surface text-primary text-sm px-4 py-2.5 rounded-2xl rounded-bl-md max-w-[80%]">
+                        That would be great! Saturday works for me.
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <div className="text-white text-sm px-4 py-2.5 rounded-2xl rounded-br-md max-w-[80%]" style={{ background: 'var(--color-accent, #3b82f6)' }}>
+                        Perfect, I'll set it up for Saturday 2 PM. See you there! 👍
+                      </div>
+                    </div>
+                  </div>
+                  {/* Chat input mock */}
+                  <div className="px-4 py-3 border-t border-border/40">
+                    <div className="flex items-center gap-2 bg-surface rounded-xl px-4 py-2.5 border border-border/50">
+                      <span className="text-sm text-muted flex-1">Type a message...</span>
+                      <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+                        <ArrowRight size={14} className="text-white" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials */}
       <section className="py-20 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
