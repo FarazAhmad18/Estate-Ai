@@ -142,7 +142,7 @@ export default function ChatBubble() {
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div style={{ maxWidth: '85%' }}>
                   <div
-                    className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-[13px] sm:text-sm leading-relaxed ${
+                    className={`px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-sm leading-relaxed ${
                       msg.role === 'user'
                         ? 'bg-accent text-white rounded-br-md'
                         : 'bg-surface text-primary rounded-bl-md'
