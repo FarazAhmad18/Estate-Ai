@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import Spinner from '../components/Spinner';
+import PropertyCard from '../components/PropertyCard';
 
 export default function PropertyDetail() {
   const { id } = useParams();
@@ -30,6 +31,10 @@ export default function PropertyDetail() {
   const [reviewContent, setReviewContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [hoverRating, setHoverRating] = useState(0);
+
+  // Similar properties
+  const [similar, setSimilar] = useState([]);
+  const [similarFavIds, setSimilarFavIds] = useState(new Set());
 
   useEffect(() => {
     const fetches = [
@@ -55,6 +60,75 @@ export default function PropertyDetail() {
         .catch(() => {});
     }
   }, [user, id]);
+
+  // Fetch similar properties
+  useEffect(() => {
+    if (!property) return;
+    const priceMin = Math.round(property.price * 0.3);
+    const priceMax = Math.round(property.price * 3);
+    // Try city part (after last comma), fallback to full location
+    const parts = property.location?.split(',');
+    const locationCity = parts?.length > 1 ? parts.pop().trim() : '';
+
+    // Use full location string for matching (e.g. "DHA Phase 5, Lahore")
+    const fullLocation = property.location?.trim() || '';
+
+    const fetchSimilar = async () => {
+      // First try: same location + same type + purpose + price range
+      if (fullLocation) {
+        const params = new URLSearchParams({ location: fullLocation, type: property.type, purpose: property.purpose, minPrice: priceMin, maxPrice: priceMax, limit: 5 });
+        const res = await api.get(`/search?${params}`);
+        const filtered = (res.data.properties || []).filter((p) => p.id !== property.id).slice(0, 4);
+        if (filtered.length > 0) return filtered;
+      }
+      // Second try: city only (after last comma) + purpose + price range
+      if (locationCity) {
+        const params = new URLSearchParams({ location: locationCity, purpose: property.purpose, minPrice: priceMin, maxPrice: priceMax, limit: 5 });
+        const res = await api.get(`/search?${params}`);
+        const filtered = (res.data.properties || []).filter((p) => p.id !== property.id).slice(0, 4);
+        if (filtered.length > 0) return filtered;
+      }
+      // Third try: city only (no type/price filter)
+      if (locationCity) {
+        const params = new URLSearchParams({ location: locationCity, limit: 5 });
+        const res = await api.get(`/search?${params}`);
+        const filtered = (res.data.properties || []).filter((p) => p.id !== property.id).slice(0, 4);
+        if (filtered.length > 0) return filtered;
+      }
+      // Last resort: same type + purpose
+      const params4 = new URLSearchParams({ type: property.type, purpose: property.purpose, limit: 5 });
+      const res4 = await api.get(`/search?${params4}`);
+      return (res4.data.properties || []).filter((p) => p.id !== property.id).slice(0, 4);
+    };
+
+    fetchSimilar()
+      .then((filtered) => {
+        setSimilar(filtered);
+        if (user && filtered.length > 0) {
+          const ids = filtered.map((p) => p.id).join(',');
+          api.get(`/favorites/check?propertyIds=${ids}`)
+            .then((r) => setSimilarFavIds(new Set(r.data.favoriteIds)))
+            .catch(() => {});
+        }
+      })
+      .catch(() => {});
+  }, [property?.id]);
+
+  const handleToggleSimilarFav = async (propertyId) => {
+    if (!user) return navigate('/login');
+    try {
+      const res = await api.post(`/favorites/${propertyId}`);
+      setSimilarFavIds((prev) => {
+        const next = new Set(prev);
+        if (res.data.saved) next.add(propertyId);
+        else next.delete(propertyId);
+        return next;
+      });
+      toast.success(res.data.saved ? 'Property saved' : 'Property removed from saved');
+    } catch {
+      toast.error('Failed to update favorite');
+    }
+  };
 
   // Fetch agent stats + reviews when property loads
   useEffect(() => {
@@ -463,6 +537,31 @@ export default function PropertyDetail() {
                     <p className="text-sm text-muted">No reviews yet for this agent</p>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* ── Similar Properties ── */}
+            {similar.length > 0 && (
+              <div className="animate-fade-in-up">
+                <div className="flex items-center justify-between mb-5">
+                  <h2 className="text-lg font-semibold text-primary">Similar Properties</h2>
+                  <Link
+                    to={`/properties?type=${property.type}&purpose=${property.purpose}`}
+                    className="text-xs font-semibold text-accent hover:underline underline-offset-4 flex items-center gap-1"
+                  >
+                    View more <ChevronRight size={12} />
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {similar.map((p) => (
+                    <PropertyCard
+                      key={p.id}
+                      property={p}
+                      isFavorited={similarFavIds.has(p.id)}
+                      onToggleFavorite={handleToggleSimilarFav}
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { X, ImagePlus, ArrowLeft, Save } from 'lucide-react';
+import { X, ImagePlus, ArrowLeft, Save, Sparkles, Loader2 } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 import Spinner from '../components/Spinner';
@@ -24,6 +24,7 @@ export default function EditProperty() {
   const [newImages, setNewImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -51,6 +52,29 @@ export default function EditProperty() {
   }, [id]);
 
   const update = (key, val) => setForm((f) => ({ ...f, [key]: val }));
+
+  const canGenerateAI = form.type && form.price;
+
+  const handleGenerateDescription = async () => {
+    if (!canGenerateAI) return;
+    setAiLoading(true);
+    try {
+      const res = await api.post('/ai/generate-description', {
+        type: form.type,
+        purpose: form.purpose,
+        price: form.price,
+        location: form.location,
+        bedrooms: form.bedrooms,
+        area: form.area,
+      });
+      update('description', res.data.description);
+      toast.success('Description generated!');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to generate description');
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const handleNewImages = (e) => {
     const files = Array.from(e.target.files || []);
@@ -274,7 +298,23 @@ export default function EditProperty() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-secondary mb-2">Description</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-semibold text-secondary">Description</label>
+                <button
+                  type="button"
+                  onClick={handleGenerateDescription}
+                  disabled={!canGenerateAI || aiLoading}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-full transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-violet-500 to-accent text-white hover:shadow-md hover:shadow-accent/20"
+                  title={!canGenerateAI ? 'Fill in type and price first' : 'Generate description with AI'}
+                >
+                  {aiLoading ? (
+                    <Loader2 size={12} className="animate-spin" />
+                  ) : (
+                    <Sparkles size={12} />
+                  )}
+                  {aiLoading ? 'Generating...' : 'Generate with AI'}
+                </button>
+              </div>
               <textarea
                 value={form.description}
                 onChange={(e) => update('description', e.target.value)}

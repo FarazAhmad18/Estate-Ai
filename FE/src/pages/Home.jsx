@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ArrowRight, Building2, Shield, Sparkles, MapPin, Star, Quote, Trash2, TrendingUp, Users, Home as HomeIcon, CheckCircle } from 'lucide-react';
+import { Search, ArrowRight, Building2, Shield, Sparkles, MapPin, Star, Quote, Trash2, TrendingUp, Users, Home as HomeIcon, CheckCircle, Bot, PenTool, MessageSquare, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -201,6 +201,20 @@ export default function Home() {
                   <p className="text-xs text-muted mt-0.5">Trusted by 1,000+ happy clients</p>
                 </div>
               </div>
+
+              {/* USP Feature Pills */}
+              <div className="mt-8 flex flex-wrap gap-2.5 animate-fade-in-up stagger-3">
+                {[
+                  { icon: Bot, text: 'AI Chatbot Search', color: 'text-accent bg-accent/[0.07] border-accent/15' },
+                  { icon: Sparkles, text: 'AI Listing Writer', color: 'text-violet-600 bg-violet-500/[0.07] border-violet-500/15' },
+                  { icon: Building2, text: 'Smart Similar Listings', color: 'text-emerald-600 bg-emerald-500/[0.07] border-emerald-500/15' },
+                ].map((usp) => (
+                  <div key={usp.text} className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border ${usp.color}`}>
+                    <usp.icon size={13} />
+                    {usp.text}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Right - Image collage */}
@@ -375,6 +389,148 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* AI Features Banner */}
+      <section className="py-12 sm:py-14 bg-surface overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12 sm:mb-14">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/[0.08] rounded-full text-xs font-semibold text-accent mb-4 border border-accent/10">
+              <Sparkles size={12} />
+              Powered by AI
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight">
+              Smarter real estate with <span className="gradient-text">artificial intelligence</span>
+            </h2>
+            <p className="mt-3 text-muted max-w-lg mx-auto text-sm sm:text-base">
+              Our AI features help you find properties faster and help agents create better listings — all built into the platform.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* AI Chatbot Card */}
+            <div className="relative group bg-white rounded-3xl border border-border/50 p-8 sm:p-10 overflow-hidden hover:shadow-xl hover:shadow-black/[0.06] hover:-translate-y-1 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-accent/[0.07] to-transparent rounded-full blur-2xl" />
+              <div className="relative">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent to-violet-500 flex items-center justify-center shadow-lg shadow-accent/20">
+                    <Bot size={22} className="text-white" />
+                  </div>
+                  <div className="px-2.5 py-1 bg-accent/10 rounded-full text-[10px] font-bold uppercase tracking-wider text-accent">
+                    For Everyone
+                  </div>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-primary mb-3">AI Property Assistant</h3>
+                <p className="text-muted text-sm leading-relaxed mb-6">
+                  Ask our AI chatbot in plain language — "Find me a 3-bedroom house in Lahore under 1 crore" — and get instant results from our listings. No filters, no forms, just conversation.
+                </p>
+                <div className="space-y-3">
+                  {[
+                    'Natural language property search',
+                    'Instant answers about real estate',
+                    'Property cards right in the chat',
+                  ].map((item) => (
+                    <div key={item} className="flex items-center gap-2.5 text-sm text-secondary">
+                      <CheckCircle size={15} className="text-accent flex-shrink-0" />
+                      {item}
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-8 flex items-center gap-3 bg-surface rounded-2xl p-4 border border-border/40">
+                  <div className="flex items-center gap-2 flex-1 text-sm text-muted">
+                    <MessageSquare size={14} className="text-accent" />
+                    "Show me villas for rent in Islamabad"
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
+                    <ArrowRight size={14} className="text-white" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Description Generator Card */}
+            <div className="relative group bg-white rounded-3xl border border-border/50 p-8 sm:p-10 overflow-hidden hover:shadow-xl hover:shadow-black/[0.06] hover:-translate-y-1 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-violet-500/[0.07] to-transparent rounded-full blur-2xl" />
+              <div className="relative">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
+                    <PenTool size={22} className="text-white" />
+                  </div>
+                  <div className="px-2.5 py-1 bg-violet-500/10 rounded-full text-[10px] font-bold uppercase tracking-wider text-violet-600">
+                    For Agents
+                  </div>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-primary mb-3">AI Description Writer</h3>
+                <p className="text-muted text-sm leading-relaxed mb-6">
+                  Stop struggling with listing descriptions. Just fill in your property details and let AI craft a professional, compelling description in seconds. One click, done.
+                </p>
+                <div className="space-y-3">
+                  {[
+                    'Professional descriptions in one click',
+                    'Tailored to the Pakistani market',
+                    'Save hours on every listing',
+                  ].map((item) => (
+                    <div key={item} className="flex items-center gap-2.5 text-sm text-secondary">
+                      <CheckCircle size={15} className="text-violet-500 flex-shrink-0" />
+                      {item}
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-8 flex items-center gap-4 bg-surface rounded-2xl p-4 border border-border/40">
+                  <div className="flex items-center gap-2">
+                    <Zap size={14} className="text-violet-500" />
+                    <span className="text-sm text-muted">Property details</span>
+                  </div>
+                  <ArrowRight size={14} className="text-muted" />
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={14} className="text-violet-500" />
+                    <span className="text-sm text-secondary font-medium">Polished description</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Smart Recommendations Card */}
+            <div className="relative group bg-white rounded-3xl border border-border/50 p-8 sm:p-10 overflow-hidden hover:shadow-xl hover:shadow-black/[0.06] hover:-translate-y-1 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-emerald-500/[0.07] to-transparent rounded-full blur-2xl" />
+              <div className="relative">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                    <TrendingUp size={22} className="text-white" />
+                  </div>
+                  <div className="px-2.5 py-1 bg-emerald-500/10 rounded-full text-[10px] font-bold uppercase tracking-wider text-emerald-600">
+                    For Buyers
+                  </div>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-primary mb-3">Smart Recommendations</h3>
+                <p className="text-muted text-sm leading-relaxed mb-6">
+                  Every listing shows you similar properties matched by type, location, and budget — so you never miss a better deal hiding in plain sight.
+                </p>
+                <div className="space-y-3">
+                  {[
+                    'Matched by type, area & price',
+                    'Discover alternatives instantly',
+                    'No sign-up required',
+                  ].map((item) => (
+                    <div key={item} className="flex items-center gap-2.5 text-sm text-secondary">
+                      <CheckCircle size={15} className="text-emerald-500 flex-shrink-0" />
+                      {item}
+                    </div>
+                  ))}
+                </div>
+                <Link to="/properties" className="mt-8 flex items-center gap-3 bg-surface rounded-2xl p-4 border border-border/40 hover:border-emerald-500/30 transition-colors">
+                  <div className="flex items-center gap-2 flex-1 text-sm text-muted">
+                    <Building2 size={14} className="text-emerald-500" />
+                    Browse and see recommendations
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                    <ArrowRight size={14} className="text-white" />
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Features */}
       <section className="py-20 sm:py-24 mesh-gradient">
@@ -575,6 +731,72 @@ export default function Home() {
                 Sign in to leave a review
               </Link>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* Become an Agent CTA */}
+      <section className="py-20 sm:py-24 mesh-gradient">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="relative bg-white rounded-3xl border border-border/50 overflow-hidden">
+            <div className="absolute top-0 left-0 w-72 h-72 bg-accent/[0.04] rounded-full blur-[80px]" />
+            <div className="absolute bottom-0 right-0 w-72 h-72 bg-violet-500/[0.04] rounded-full blur-[80px]" />
+
+            <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-0 items-center">
+              <div className="px-8 sm:px-12 py-12 sm:py-16">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/[0.08] rounded-full text-xs font-semibold text-accent mb-5 border border-accent/10">
+                  <Users size={12} />
+                  For Real Estate Professionals
+                </div>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight">
+                  Become an agent on <span className="gradient-text">EstateAI</span>
+                </h2>
+                <p className="mt-4 text-muted text-sm sm:text-base leading-relaxed max-w-md">
+                  List your properties, reach thousands of buyers, and let AI write your descriptions. Join a growing network of verified agents across Pakistan.
+                </p>
+                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[
+                    { icon: Building2, text: 'List unlimited properties' },
+                    { icon: Sparkles, text: 'AI-powered descriptions' },
+                    { icon: MessageSquare, text: 'Direct buyer messaging' },
+                    { icon: TrendingUp, text: 'Dashboard & analytics' },
+                  ].map((perk) => (
+                    <div key={perk.text} className="flex items-center gap-2.5 text-sm text-secondary">
+                      <div className="w-8 h-8 rounded-lg bg-accent/[0.08] flex items-center justify-center flex-shrink-0">
+                        <perk.icon size={14} className="text-accent" />
+                      </div>
+                      {perk.text}
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <Link
+                    to="/register"
+                    className="text-white px-8 py-3.5 rounded-full text-sm font-semibold btn-primary flex items-center gap-2"
+                  >
+                    Register as Agent <ArrowRight size={14} />
+                  </Link>
+                  <span className="text-xs text-muted">Free to join. No hidden fees.</span>
+                </div>
+              </div>
+
+              <div className="hidden lg:block relative h-full min-h-[420px]">
+                <img src={heroExterior} alt="List your property" className="absolute inset-0 w-full h-full object-cover rounded-r-3xl" />
+                <div className="absolute inset-0 bg-gradient-to-r from-white via-white/30 to-transparent rounded-r-3xl" />
+                <div className="absolute bottom-8 right-8 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl shadow-black/8 p-5 border border-border/40 max-w-[220px]">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
+                      <CheckCircle size={18} className="text-success" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-primary">200+</p>
+                      <p className="text-[11px] text-muted">Active Agents</p>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-muted leading-relaxed">Join verified agents already growing with EstateAI</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
