@@ -31,6 +31,8 @@ const agentRoutes=require('./routes/agentRoutes')
 app.use('/api',agentRoutes)
 const messageRoutes=require('./routes/messageRoutes')
 app.use('/api',messageRoutes)
+const aiRoutes=require('./routes/aiRoutes')
+app.use('/api/ai',aiRoutes)
 
 app.get('/',async(req,res)=>{
 res.send("Real Estate is Running")

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   User, Star, Building2, CheckCircle2, TrendingUp, CalendarDays,
-  Mail, Phone, ChevronLeft, ChevronRight, Trash2
+  Mail, Phone, ChevronLeft, ChevronRight, Trash2, MessageSquare, ArrowLeft
 } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -13,7 +13,9 @@ import PropertyCard from '../components/PropertyCard';
 export default function AgentProfile() {
   const { id } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [agent, setAgent] = useState(null);
+  const [contactingAgent, setContactingAgent] = useState(false);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('listings');
@@ -131,6 +133,35 @@ export default function AgentProfile() {
     }
   };
 
+  const handleContactAgent = async () => {
+    if (!user) return navigate('/login');
+    if (contactingAgent) return;
+    setContactingAgent(true);
+    try {
+      // Get agent's first available property to create conversation
+      const propRes = await api.get(`/agents/${id}/properties?limit=1`);
+      const agentProperty = propRes.data.properties?.[0];
+      if (!agentProperty) {
+        toast.error('This agent has no active listings');
+        return;
+      }
+      const res = await api.post('/conversations', {
+        property_id: agentProperty.id,
+        agent_id: parseInt(id),
+      });
+      const convId = res.data.conversation.id;
+      if (user.role === 'Agent') {
+        navigate(`/dashboard?tab=messages&conversation=${convId}`);
+      } else {
+        navigate(`/messages?conversation=${convId}`);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to start conversation');
+    } finally {
+      setContactingAgent(false);
+    }
+  };
+
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     return new Date(dateStr).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -149,8 +180,15 @@ export default function AgentProfile() {
   return (
     <div className="min-h-screen pt-20 pb-16 mesh-gradient">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-sm text-muted hover:text-primary transition-colors mt-6 mb-4 font-medium"
+        >
+          <ArrowLeft size={16} /> Back
+        </button>
+
         {/* Agent Header */}
-        <div className="bg-white rounded-2xl border border-border/50 p-6 sm:p-8 mt-6 animate-fade-in-up">
+        <div className="bg-white rounded-2xl border border-border/50 p-6 sm:p-8 animate-fade-in-up">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6">
             <div className="w-20 h-20 rounded-full gradient-accent flex items-center justify-center overflow-hidden flex-shrink-0 ring-4 ring-white shadow-lg">
               {agent.avatar_url ? (
@@ -182,13 +220,15 @@ export default function AgentProfile() {
               </div>
             </div>
             <div className="flex gap-3 flex-shrink-0 w-full sm:w-auto">
-              {agent.email && (
-                <a
-                  href={`mailto:${agent.email}`}
-                  className="flex-1 sm:flex-none text-center text-white px-6 py-2.5 rounded-full text-sm font-semibold btn-primary"
+              {(!user || user.id !== parseInt(id)) && (
+                <button
+                  onClick={handleContactAgent}
+                  disabled={contactingAgent}
+                  className="flex-1 sm:flex-none text-center text-white px-6 py-2.5 rounded-full text-sm font-semibold btn-primary disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  Contact
-                </a>
+                  <MessageSquare size={15} />
+                  {contactingAgent ? 'Opening chat...' : 'Contact Agent'}
+                </button>
               )}
               {agent.phone && (
                 <a

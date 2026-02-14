@@ -22,6 +22,7 @@ import SavedProperties from './pages/SavedProperties';
 import AdminDashboard from './pages/AdminDashboard';
 import AgentProfile from './pages/AgentProfile';
 import Messages from './pages/Messages';
+import ChatBubble from './components/ChatBubble';
 
 const AUTH_ROUTES = ['/login', '/register', '/verify-otp', '/forgot-password', '/reset-password'];
 
@@ -122,6 +123,7 @@ function AppContent() {
           </Routes>
         </main>
         {!isAuthPage && !isAdminPage && !isMessagesPage && <Footer />}
+        {!isAuthPage && !isAdminPage && <ChatBubble />}
       </div>
     </>
   );
