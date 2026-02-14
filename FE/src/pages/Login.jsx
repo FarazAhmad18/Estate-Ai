@@ -27,7 +27,7 @@ export default function Login() {
       const data = await login(form.email, form.password);
       setLoading(false);
       setSuccess(true);
-      setTimeout(() => navigate(getRedirectPath(data.user)), 800);
+      setTimeout(() => navigate(getRedirectPath(data.user)), 900);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Login failed');
       setLoading(false);
@@ -40,7 +40,7 @@ export default function Login() {
       const data = await googleLogin(credentialResponse.credential);
       setGoogleLoading(false);
       setSuccess(true);
-      setTimeout(() => navigate(getRedirectPath(data.user)), 800);
+      setTimeout(() => navigate(getRedirectPath(data.user)), 900);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Google login failed');
       setGoogleLoading(false);
@@ -55,20 +55,7 @@ export default function Login() {
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-purple-500/5 blur-3xl translate-y-1/3 -translate-x-1/4" />
       </div>
 
-      {/* Success overlay */}
-      {success && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm animate-fade-in">
-          <div className="text-center animate-scale-in">
-            <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-500/30">
-              <Check size={32} className="text-white" strokeWidth={3} />
-            </div>
-            <p className="text-lg font-semibold text-primary">Welcome back!</p>
-            <p className="text-sm text-muted mt-1">Redirecting you now...</p>
-          </div>
-        </div>
-      )}
-
-      <div className={`w-full max-w-[420px] relative z-10 animate-fade-in-up transition-all duration-300 ${success ? 'opacity-0 scale-95' : ''}`}>
+      <div className="w-full max-w-[420px] relative z-10 animate-fade-in-up">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2.5 mb-8">
           <div className="w-9 h-9 rounded-xl gradient-accent flex items-center justify-center shadow-lg shadow-accent/20">
@@ -92,6 +79,11 @@ export default function Login() {
               <div className="flex items-center gap-2 px-6 py-3 bg-surface rounded-full text-sm text-muted">
                 <div className="w-4 h-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
                 Signing in with Google...
+              </div>
+            ) : success ? (
+              <div className="flex items-center gap-2 px-6 py-3 bg-green-50 rounded-full text-sm text-green-600 font-medium">
+                <Check size={16} />
+                Signed in
               </div>
             ) : (
               <GoogleLogin
@@ -154,12 +146,21 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading || success}
-              className="w-full py-3 rounded-xl text-sm font-semibold text-white btn-primary disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+              className={`w-full py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 mt-2 transition-all duration-300 ${
+                success
+                  ? 'bg-green-500 shadow-lg shadow-green-500/20'
+                  : 'btn-primary disabled:opacity-50'
+              }`}
             >
               {loading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Signing in...
+                </>
+              ) : success ? (
+                <>
+                  <Check size={16} strokeWidth={3} />
+                  Welcome back!
                 </>
               ) : (
                 <>Sign in <ArrowRight size={14} /></>

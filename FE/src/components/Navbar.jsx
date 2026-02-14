@@ -13,7 +13,6 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -44,14 +43,11 @@ export default function Navbar() {
   }, [mobileOpen]);
 
   const handleLogout = () => {
-    setLoggingOut(true);
     setDropdownOpen(false);
     setMobileOpen(false);
-    setTimeout(() => {
-      logout();
-      navigate('/');
-      setLoggingOut(false);
-    }, 600);
+    logout();
+    toast.success('Signed out successfully');
+    navigate('/');
   };
 
   const isActive = (path) => location.pathname === path;
@@ -74,18 +70,6 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Logout overlay */}
-      {loggingOut && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-white/90 backdrop-blur-sm animate-fade-in">
-          <div className="text-center animate-scale-in">
-            <div className="w-12 h-12 rounded-full bg-surface flex items-center justify-center mx-auto mb-3">
-              <LogOut size={20} className="text-muted" />
-            </div>
-            <p className="text-sm font-medium text-muted">Signing out...</p>
-          </div>
-        </div>
-      )}
-
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? 'glass border-b border-border/60 shadow-sm shadow-black/[0.03]'

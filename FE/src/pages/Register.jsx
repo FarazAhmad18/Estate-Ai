@@ -62,20 +62,7 @@ export default function Register() {
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-accent/5 blur-3xl translate-y-1/4 translate-x-1/4" />
       </div>
 
-      {/* Success overlay */}
-      {success && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm animate-fade-in">
-          <div className="text-center animate-scale-in">
-            <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-500/30">
-              <Check size={32} className="text-white" strokeWidth={3} />
-            </div>
-            <p className="text-lg font-semibold text-primary">Account created!</p>
-            <p className="text-sm text-muted mt-1">Setting up your profile...</p>
-          </div>
-        </div>
-      )}
-
-      <div className={`w-full max-w-[420px] relative z-10 animate-fade-in-up transition-all duration-300 ${success ? 'opacity-0 scale-95' : ''}`}>
+      <div className="w-full max-w-[420px] relative z-10 animate-fade-in-up">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2.5 mb-8">
           <div className="w-9 h-9 rounded-xl gradient-accent flex items-center justify-center shadow-lg shadow-accent/20">
@@ -128,6 +115,11 @@ export default function Register() {
               <div className="flex items-center gap-2 px-6 py-3 bg-surface rounded-full text-sm text-muted">
                 <div className="w-4 h-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
                 Signing up with Google...
+              </div>
+            ) : success ? (
+              <div className="flex items-center gap-2 px-6 py-3 bg-green-50 rounded-full text-sm text-green-600 font-medium">
+                <Check size={16} />
+                Account created
               </div>
             ) : (
               <GoogleLogin
@@ -238,12 +230,21 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading || success}
-              className="w-full py-3 rounded-xl text-sm font-semibold text-white btn-primary disabled:opacity-50 flex items-center justify-center gap-2 mt-1"
+              className={`w-full py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 mt-1 transition-all duration-300 ${
+                success
+                  ? 'bg-green-500 shadow-lg shadow-green-500/20'
+                  : 'btn-primary disabled:opacity-50'
+              }`}
             >
               {loading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Creating account...
+                </>
+              ) : success ? (
+                <>
+                  <Check size={16} strokeWidth={3} />
+                  Welcome to EstateAI!
                 </>
               ) : (
                 <>Create Account <ArrowRight size={14} /></>
