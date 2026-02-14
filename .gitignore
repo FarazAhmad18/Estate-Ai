@@ -1,6 +1,7 @@
 .claude/
+node_modules/
 BE/.env
-BE/node_modules/
 FE/.env
+FE/.vercel
 nul
 recom.txt
