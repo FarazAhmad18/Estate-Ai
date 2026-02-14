@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { MessageSquare } from 'lucide-react';
 import api from '../lib/api';
 import ConversationList from '../components/messaging/ConversationList';
 import ChatThread from '../components/messaging/ChatThread';
@@ -31,7 +32,6 @@ export default function Messages() {
     setMobileShowChat(false);
   };
 
-  // Bug 4: Update selectedConversation when conversations are refetched
   const handleConversationsLoaded = (conversations) => {
     if (selectedConversation) {
       const updated = conversations.find((c) => c.id === selectedConversation.id);
@@ -47,13 +47,18 @@ export default function Messages() {
   };
 
   return (
-    <div className="h-[calc(100dvh-64px)] mt-16 flex">
-      {/* Conversation List — hidden on mobile when chat is open */}
+    <div className="h-[calc(100dvh-64px)] mt-16 flex bg-surface">
+      {/* Conversation List */}
       <div className={`w-full md:w-80 lg:w-96 border-r border-border/50 bg-white flex-shrink-0 ${
         mobileShowChat ? 'hidden md:flex md:flex-col' : 'flex flex-col'
       }`}>
-        <div className="px-4 py-3 border-b border-border/50">
-          <h1 className="text-lg font-semibold text-primary">Messages</h1>
+        <div className="px-5 py-4 border-b border-border/40">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg gradient-accent flex items-center justify-center">
+              <MessageSquare size={14} className="text-white" />
+            </div>
+            <h1 className="text-lg font-bold text-primary tracking-tight">Messages</h1>
+          </div>
         </div>
         <ConversationList
           onSelect={handleSelect}
@@ -62,7 +67,7 @@ export default function Messages() {
         />
       </div>
 
-      {/* Chat Thread — hidden on mobile when list is shown */}
+      {/* Chat Thread */}
       <div className={`flex-1 ${
         mobileShowChat ? 'flex' : 'hidden md:flex'
       }`}>
