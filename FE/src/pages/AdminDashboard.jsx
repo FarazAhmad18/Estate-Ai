@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Users, Building2, MessageSquare, Eye, Trash2, Search,
   TrendingUp, TrendingDown, UserPlus, UserMinus, ChevronLeft, ChevronRight, Star,
-  CheckCircle, XCircle, BadgeDollarSign, KeyRound,
+  CheckCircle, XCircle, BadgeDollarSign, KeyRound, Shield, LayoutDashboard,
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import api from '../lib/api';
@@ -13,11 +13,11 @@ import ConfirmModal from '../components/ConfirmModal';
 import UserProfilePanel from '../components/UserProfilePanel';
 
 const TABS = [
-  { key: 'overview', label: 'Overview' },
-  { key: 'users', label: 'Users' },
-  { key: 'properties', label: 'Properties' },
-  { key: 'testimonials', label: 'Testimonials' },
-  { key: 'visitors', label: 'Visitors' },
+  { key: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { key: 'users', label: 'Users', icon: Users },
+  { key: 'properties', label: 'Properties', icon: Building2 },
+  { key: 'testimonials', label: 'Testimonials', icon: Star },
+  { key: 'visitors', label: 'Visitors', icon: Eye },
 ];
 
 export default function AdminDashboard() {
@@ -25,35 +25,50 @@ export default function AdminDashboard() {
   const [tab, setTab] = useState('overview');
 
   return (
-    <div className="min-h-screen pt-24 pb-16">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-primary tracking-tight">Admin Dashboard</h1>
-          <p className="mt-1 text-sm text-muted">Manage your platform</p>
+    <div className="min-h-screen pt-24 pb-16 mesh-gradient">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        {/* Header */}
+        <div className="mb-8 animate-fade-in-up">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl gradient-accent flex items-center justify-center shadow-lg shadow-accent/20">
+              <Shield size={18} className="text-white" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-accent">Admin Panel</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">Dashboard</h1>
+            </div>
+          </div>
+          <p className="text-sm text-muted">Manage users, properties, and platform settings.</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-surface rounded-xl p-1 mb-8 w-fit overflow-x-auto">
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                tab === t.key
-                  ? 'bg-white text-primary shadow-sm'
-                  : 'text-muted hover:text-secondary'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+        <div className="flex gap-1.5 mb-8 overflow-x-auto scrollbar-hide pb-1">
+          {TABS.map((t) => {
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
+                  tab === t.key
+                    ? 'bg-accent text-white shadow-sm shadow-accent/20'
+                    : 'bg-white text-muted border border-border/50 hover:text-secondary hover:border-border'
+                }`}
+              >
+                <Icon size={15} />
+                {t.label}
+              </button>
+            );
+          })}
         </div>
 
-        {tab === 'overview' && <OverviewTab />}
-        {tab === 'users' && <UsersTab currentUserId={user?.id} />}
-        {tab === 'properties' && <PropertiesTab />}
-        {tab === 'testimonials' && <TestimonialsTab />}
-        {tab === 'visitors' && <VisitorsTab />}
+        <div className="animate-fade-in-up">
+          {tab === 'overview' && <OverviewTab />}
+          {tab === 'users' && <UsersTab currentUserId={user?.id} />}
+          {tab === 'properties' && <PropertiesTab />}
+          {tab === 'testimonials' && <TestimonialsTab />}
+          {tab === 'visitors' && <VisitorsTab />}
+        </div>
       </div>
     </div>
   );
@@ -80,7 +95,7 @@ function TrendBadge({ current, previous }) {
   return (
     <span className={`inline-flex items-center gap-0.5 text-[11px] font-semibold ${up ? 'text-emerald-600' : 'text-red-500'}`}>
       {up ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-      {up ? '+' : ''}{pct}% vs last week
+      {up ? '+' : ''}{pct}%
     </span>
   );
 }
@@ -90,7 +105,7 @@ function SelectFilter({ value, onChange, options, placeholder }) {
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="px-3 py-2.5 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors"
+      className="px-3 py-2.5 bg-white rounded-xl text-sm border border-border/50 focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all"
     >
       <option value="">{placeholder}</option>
       {options.map((o) => (
@@ -103,11 +118,11 @@ function SelectFilter({ value, onChange, options, placeholder }) {
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white px-3.5 py-2.5 rounded-xl shadow-lg border border-border/50">
+    <div className="bg-white px-3.5 py-2.5 rounded-xl shadow-lg border border-border/40">
       <p className="text-[11px] text-muted mb-0.5">
         {new Date(label + 'T00:00:00').toLocaleDateString('en-PK', { month: 'short', day: 'numeric', year: 'numeric' })}
       </p>
-      <p className="text-sm font-semibold text-primary">{payload[0].value}</p>
+      <p className="text-sm font-bold text-primary">{payload[0].value}</p>
     </div>
   );
 };
@@ -139,12 +154,15 @@ function OverviewTab() {
       title: 'Users',
       subtitle: 'New registrations',
       data: fillDates(trends.usersPerDay),
-      color: '#6366f1',
-      gradientFrom: 'rgba(99,102,241,0.15)',
+      color: '#2563eb',
+      gradientFrom: 'rgba(37,99,235,0.15)',
       total: stats.newUsersThisWeek,
       label: 'this week',
       current: stats.newUsersThisWeek,
       previous: stats.prevWeekNewUsers,
+      icon: UserPlus,
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-600',
     },
     {
       title: 'Properties',
@@ -154,6 +172,9 @@ function OverviewTab() {
       gradientFrom: 'rgba(16,185,129,0.15)',
       total: stats.totalProperties,
       label: 'total',
+      icon: Building2,
+      iconBg: 'bg-emerald-100',
+      iconColor: 'text-emerald-600',
     },
     {
       title: 'Visitors',
@@ -165,6 +186,9 @@ function OverviewTab() {
       label: 'this week',
       current: stats.visitorsThisWeek,
       previous: stats.prevWeekVisitors,
+      icon: Eye,
+      iconBg: 'bg-amber-100',
+      iconColor: 'text-amber-600',
     },
     {
       title: 'Deleted Accounts',
@@ -176,90 +200,104 @@ function OverviewTab() {
       label: 'this week',
       current: stats.deletedAccountsThisWeek || 0,
       previous: stats.prevWeekDeletedAccounts,
+      icon: UserMinus,
+      iconBg: 'bg-red-100',
+      iconColor: 'text-red-600',
     },
   ] : [];
 
   const statCards = [
-    { label: 'Total Users', value: stats.totalUsers, icon: Users, bg: 'bg-indigo-50', color: 'text-indigo-600' },
-    { label: 'Total Properties', value: stats.totalProperties, icon: Building2, bg: 'bg-emerald-50', color: 'text-emerald-600' },
-    { label: 'Sold Properties', value: stats.soldProperties || 0, icon: BadgeDollarSign, bg: 'bg-orange-50', color: 'text-orange-500' },
-    { label: 'Rented Properties', value: stats.rentedProperties || 0, icon: KeyRound, bg: 'bg-violet-50', color: 'text-violet-500' },
-    { label: 'Testimonials', value: stats.totalTestimonials, icon: MessageSquare, bg: 'bg-blue-50', color: 'text-blue-500' },
-    { label: 'Visitors Today', value: stats.visitorsToday, icon: Eye, bg: 'bg-amber-50', color: 'text-amber-500' },
-    { label: 'Deleted Accounts', value: stats.totalDeletedAccounts || 0, icon: UserMinus, bg: 'bg-red-50', color: 'text-red-500' },
+    { label: 'Total Users', value: stats.totalUsers, icon: Users, gradient: 'from-blue-500 to-indigo-600' },
+    { label: 'Total Properties', value: stats.totalProperties, icon: Building2, gradient: 'from-emerald-500 to-teal-600' },
+    { label: 'Sold Properties', value: stats.soldProperties || 0, icon: BadgeDollarSign, gradient: 'from-orange-500 to-amber-600' },
+    { label: 'Rented Properties', value: stats.rentedProperties || 0, icon: KeyRound, gradient: 'from-violet-500 to-purple-600' },
+    { label: 'Testimonials', value: stats.totalTestimonials, icon: MessageSquare, gradient: 'from-cyan-500 to-blue-600' },
+    { label: 'Visitors Today', value: stats.visitorsToday, icon: Eye, gradient: 'from-amber-500 to-yellow-600' },
+    { label: 'Deleted Accounts', value: stats.totalDeletedAccounts || 0, icon: UserMinus, gradient: 'from-red-500 to-rose-600' },
   ];
 
   return (
     <>
-      {/* Charts — hero section */}
-      {charts.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-          {charts.map((ch) => (
-            <div key={ch.title} className="bg-white rounded-2xl border border-border/50 p-6 shadow-sm">
-              <div className="flex items-start justify-between mb-1">
-                <div>
-                  <p className="text-xs font-medium text-muted uppercase tracking-wider">{ch.subtitle}</p>
-                  <div className="flex items-baseline gap-2 mt-1">
-                    <p className="text-2xl font-bold text-primary">{ch.total.toLocaleString()}</p>
-                    <span className="text-xs text-muted">{ch.label}</span>
-                  </div>
-                </div>
-                {ch.previous !== undefined && (
-                  <TrendBadge current={ch.current} previous={ch.previous} />
-                )}
-              </div>
-              <div className="mt-4 -mx-2">
-                <ResponsiveContainer width="100%" height={180}>
-                  <AreaChart data={ch.data}>
-                    <defs>
-                      <linearGradient id={`grad-${ch.title}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={ch.gradientFrom} stopOpacity={1} />
-                        <stop offset="100%" stopColor={ch.color} stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis
-                      dataKey="date"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 10, fill: '#94a3b8' }}
-                      tickFormatter={(d) => {
-                        const date = new Date(d + 'T00:00:00');
-                        return date.getDate() % 7 === 0 ? date.toLocaleDateString('en-PK', { month: 'short', day: 'numeric' }) : '';
-                      }}
-                      interval={0}
-                    />
-                    <YAxis hide allowDecimals={false} />
-                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: ch.color, strokeWidth: 1, strokeDasharray: '4 4' }} />
-                    <Area
-                      type="monotone"
-                      dataKey="count"
-                      stroke={ch.color}
-                      strokeWidth={2.5}
-                      fill={`url(#grad-${ch.title})`}
-                      dot={false}
-                      activeDot={{ r: 5, fill: ch.color, stroke: '#fff', strokeWidth: 2 }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {statCards.map((c) => (
-          <div key={c.label} className="bg-white rounded-2xl border border-border/50 p-5">
-            <div className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center mb-3`}>
-              <c.icon size={18} className={c.color} />
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+        {statCards.map((c, i) => (
+          <div key={c.label} className={`bg-white rounded-2xl border border-border/40 p-5 hover:shadow-md transition-all animate-fade-in-up stagger-${Math.min(i + 1, 6)}`}>
+            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${c.gradient} flex items-center justify-center mb-3 shadow-sm`}>
+              <c.icon size={18} className="text-white" />
             </div>
-            <p className="text-2xl font-semibold text-primary">{c.value}</p>
-            <p className="text-xs text-muted mt-0.5">{c.label}</p>
+            <p className="text-2xl font-bold text-primary">{c.value?.toLocaleString()}</p>
+            <p className="text-xs text-muted mt-0.5 font-medium">{c.label}</p>
           </div>
         ))}
       </div>
+
+      {/* Charts */}
+      {charts.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {charts.map((ch) => {
+            const Icon = ch.icon;
+            return (
+              <div key={ch.title} className="bg-white rounded-2xl border border-border/40 p-6 hover:shadow-md transition-all">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-lg ${ch.iconBg} flex items-center justify-center`}>
+                      <Icon size={16} className={ch.iconColor} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-primary">{ch.title}</p>
+                      <p className="text-[11px] text-muted">{ch.subtitle}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-bold text-primary">{ch.total.toLocaleString()}</p>
+                    <div className="flex items-center gap-1.5 justify-end">
+                      <span className="text-[11px] text-muted">{ch.label}</span>
+                      {ch.previous !== undefined && (
+                        <TrendBadge current={ch.current} previous={ch.previous} />
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="-mx-2">
+                  <ResponsiveContainer width="100%" height={200}>
+                    <AreaChart data={ch.data}>
+                      <defs>
+                        <linearGradient id={`grad-${ch.title}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={ch.gradientFrom} stopOpacity={1} />
+                          <stop offset="100%" stopColor={ch.color} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#f1f5f9" />
+                      <XAxis
+                        dataKey="date"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 10, fill: '#94a3b8' }}
+                        tickFormatter={(d) => {
+                          const date = new Date(d + 'T00:00:00');
+                          return date.getDate() % 7 === 0 ? date.toLocaleDateString('en-PK', { month: 'short', day: 'numeric' }) : '';
+                        }}
+                        interval={0}
+                      />
+                      <YAxis hide allowDecimals={false} />
+                      <Tooltip content={<CustomTooltip />} cursor={{ stroke: ch.color, strokeWidth: 1, strokeDasharray: '4 4' }} />
+                      <Area
+                        type="monotone"
+                        dataKey="count"
+                        stroke={ch.color}
+                        strokeWidth={2.5}
+                        fill={`url(#grad-${ch.title})`}
+                        dot={false}
+                        activeDot={{ r: 5, fill: ch.color, stroke: '#fff', strokeWidth: 2 }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </>
   );
 }
@@ -332,12 +370,12 @@ function UsersTab({ currentUserId }) {
 
   const roleBadge = (role) => {
     const styles = {
-      Admin: 'bg-red-50 text-red-600',
-      Agent: 'bg-accent/10 text-accent',
-      Buyer: 'bg-surface text-muted',
+      Admin: 'bg-gradient-to-r from-red-500 to-rose-500 text-white',
+      Agent: 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white',
+      Buyer: 'bg-surface text-muted border border-border/50',
     };
     return (
-      <span className={`text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full ${styles[role] || styles.Buyer}`}>
+      <span className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${styles[role] || styles.Buyer}`}>
         {role}
       </span>
     );
@@ -349,24 +387,24 @@ function UsersTab({ currentUserId }) {
     <>
       <form onSubmit={handleSearch} className="flex gap-3 mb-6 flex-wrap">
         <div className="relative flex-1 max-w-md">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted/60" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search users..."
-            className="w-full pl-10 pr-4 py-2.5 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl text-sm border border-border/50 focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all"
           />
         </div>
         <SelectFilter value={roleFilter} onChange={handleRoleFilterChange} options={['Admin', 'Agent', 'Buyer']} placeholder="All Roles" />
-        <button type="submit" className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors">
+        <button type="submit" className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white btn-primary">
           Search
         </button>
         <button
           type="button"
           onClick={handleToggleDeleted}
-          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-            showDeleted ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-surface text-muted border border-border/50 hover:text-secondary'
+          className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+            showDeleted ? 'bg-red-500 text-white shadow-sm shadow-red-500/20' : 'bg-white text-muted border border-border/50 hover:text-secondary hover:border-border'
           }`}
         >
           {showDeleted ? 'Showing Deleted' : 'Show Deleted'}
@@ -376,35 +414,40 @@ function UsersTab({ currentUserId }) {
       {loading ? (
         <Spinner className="py-32" />
       ) : users.length === 0 ? (
-        <p className="text-center py-20 text-muted text-sm">No users found</p>
+        <div className="text-center py-20 bg-white rounded-2xl border border-border/40">
+          <div className="w-14 h-14 rounded-2xl bg-surface flex items-center justify-center mx-auto mb-4">
+            <Users size={24} className="text-muted" />
+          </div>
+          <p className="text-muted text-sm font-medium">No users found</p>
+        </div>
       ) : (
         <div className="space-y-3">
           {users.map((u) => {
             const isDeleted = !!u.deletedAt;
             return (
-              <div key={u.id} onClick={() => setSelectedUser(u)} className={`flex items-center gap-4 rounded-xl border p-4 transition-shadow cursor-pointer ${
-                isDeleted ? 'bg-red-50/50 border-red-200/50 opacity-70' : 'bg-white border-border/50 hover:shadow-sm'
+              <div key={u.id} onClick={() => setSelectedUser(u)} className={`flex items-center gap-4 rounded-2xl border p-4 transition-all cursor-pointer ${
+                isDeleted ? 'bg-red-50/50 border-red-200/50 opacity-70' : 'bg-white border-border/40 hover:shadow-md hover:border-border/60'
               }`}>
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 ${isDeleted ? 'bg-red-100/50' : 'bg-primary/10'}`}>
+                <div className={`w-11 h-11 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 ring-2 ${isDeleted ? 'ring-red-200 bg-red-100/50' : 'ring-border/30 bg-gradient-to-br from-accent/10 to-purple-500/10'}`}>
                   {u.avatar_url ? (
                     <img src={u.avatar_url} alt="" className={`w-full h-full object-cover ${isDeleted ? 'grayscale' : ''}`} />
                   ) : (
-                    <span className={`text-xs font-semibold ${isDeleted ? 'text-red-400' : 'text-primary'}`}>{u.name?.charAt(0)?.toUpperCase()}</span>
+                    <span className={`text-sm font-bold ${isDeleted ? 'text-red-400' : 'text-accent'}`}>{u.name?.charAt(0)?.toUpperCase()}</span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <p className={`text-sm font-semibold truncate ${isDeleted ? 'text-red-400 line-through' : 'text-primary'}`}>{u.name}</p>
                     {roleBadge(u.role)}
                     {isDeleted && (
-                      <span className="text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-100 text-red-500">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-red-100 text-red-500">
                         Deleted
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-muted truncate">{u.email}</p>
+                  <p className="text-xs text-muted truncate mt-0.5">{u.email}</p>
                 </div>
-                <p className="text-xs text-muted hidden sm:block">
+                <p className="text-xs text-muted hidden sm:block font-medium">
                   {isDeleted ? `Deleted ${formatDate(u.deletedAt)}` : formatDate(u.createdAt)}
                 </p>
                 {!isDeleted && u.role !== 'Admin' && u.id !== currentUserId && (
@@ -413,7 +456,7 @@ function UsersTab({ currentUserId }) {
                     onClick={(e) => e.stopPropagation()}
                     onChange={(e) => handleRoleChange(u.id, e.target.value)}
                     disabled={changingRole === u.id}
-                    className="text-xs px-2 py-1.5 rounded-lg border border-border/50 bg-surface disabled:opacity-50"
+                    className="text-xs px-2.5 py-1.5 rounded-lg border border-border/50 bg-white focus:border-accent focus:ring-2 focus:ring-accent/10 disabled:opacity-50 transition-all"
                   >
                     <option value="Buyer">Buyer</option>
                     <option value="Agent">Agent</option>
@@ -424,7 +467,7 @@ function UsersTab({ currentUserId }) {
                   <button
                     onClick={(e) => { e.stopPropagation(); setConfirmDelete(u.id); }}
                     disabled={u.id === currentUserId || u.role === 'Admin'}
-                    className="w-9 h-9 rounded-lg bg-surface flex items-center justify-center text-muted hover:text-red-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-9 h-9 rounded-xl bg-surface flex items-center justify-center text-muted hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     title={u.id === currentUserId ? 'Cannot delete yourself' : u.role === 'Admin' ? 'Cannot delete admins' : 'Delete user'}
                   >
                     <Trash2 size={15} />
@@ -519,11 +562,11 @@ function PropertiesTab() {
     return price?.toLocaleString();
   };
 
-  const statusColor = (status) => {
+  const statusStyle = (status) => {
     switch (status) {
-      case 'Sold': return 'bg-red-50 text-red-600 border-red-100';
-      case 'Rented': return 'bg-blue-50 text-blue-600 border-blue-100';
-      default: return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+      case 'Sold': return 'bg-gradient-to-r from-red-500 to-rose-500 text-white';
+      case 'Rented': return 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white';
+      default: return 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white';
     }
   };
 
@@ -531,18 +574,18 @@ function PropertiesTab() {
     <>
       <form onSubmit={handleSearch} className="flex gap-3 mb-6 flex-wrap">
         <div className="relative flex-1 max-w-md">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted/60" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by location..."
-            className="w-full pl-10 pr-4 py-2.5 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl text-sm border border-border/50 focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all"
           />
         </div>
         <SelectFilter value={typeFilter} onChange={handleTypeChange} options={['House', 'Apartment', 'Villa', 'Commercial', 'Land']} placeholder="All Types" />
         <SelectFilter value={statusFilter} onChange={handleStatusChange} options={['Available', 'Sold', 'Rented']} placeholder="All Statuses" />
-        <button type="submit" className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors">
+        <button type="submit" className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white btn-primary">
           Search
         </button>
       </form>
@@ -550,12 +593,17 @@ function PropertiesTab() {
       {loading ? (
         <Spinner className="py-32" />
       ) : properties.length === 0 ? (
-        <p className="text-center py-20 text-muted text-sm">No properties found</p>
+        <div className="text-center py-20 bg-white rounded-2xl border border-border/40">
+          <div className="w-14 h-14 rounded-2xl bg-surface flex items-center justify-center mx-auto mb-4">
+            <Building2 size={24} className="text-muted" />
+          </div>
+          <p className="text-muted text-sm font-medium">No properties found</p>
+        </div>
       ) : (
         <>
           <div className="space-y-3">
             {properties.map((p) => (
-              <div key={p.id} className="flex items-center gap-4 bg-white rounded-xl border border-border/50 p-4 hover:shadow-sm transition-shadow">
+              <div key={p.id} className="flex items-center gap-4 bg-white rounded-2xl border border-border/40 p-4 hover:shadow-md transition-all">
                 <div className="w-16 h-16 rounded-xl bg-surface overflow-hidden flex-shrink-0">
                   {p.PropertyImages?.[0]?.image_url ? (
                     <img src={p.PropertyImages[0].image_url} alt="" className="w-full h-full object-cover" />
@@ -565,20 +613,20 @@ function PropertiesTab() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[11px] font-medium bg-surface px-2 py-0.5 rounded text-muted">{p.type}</span>
-                    <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${statusColor(p.status)}`}>{p.status}</span>
+                    <span className="text-[11px] font-semibold bg-surface px-2.5 py-0.5 rounded-full text-muted">{p.type}</span>
+                    <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${statusStyle(p.status)}`}>{p.status}</span>
                   </div>
-                  <p className="font-semibold text-primary mt-1 text-sm">PKR {formatPrice(p.price)}</p>
+                  <p className="font-bold text-primary mt-1 text-sm">PKR {formatPrice(p.price)}</p>
                   <p className="text-xs text-muted truncate">{p.location}</p>
                 </div>
                 <div className="hidden sm:block text-right flex-shrink-0">
-                  <p className="text-xs font-medium text-secondary">{p.User?.name || '—'}</p>
+                  <p className="text-xs font-semibold text-secondary">{p.User?.name || '—'}</p>
                   <p className="text-[10px] text-muted">{p.User?.email}</p>
                 </div>
                 <button
                   onClick={() => setConfirmDelete(p.id)}
                   disabled={deleting === p.id}
-                  className="w-9 h-9 rounded-lg bg-surface flex items-center justify-center text-muted hover:text-red-500 transition-colors disabled:opacity-50"
+                  className="w-9 h-9 rounded-xl bg-surface flex items-center justify-center text-muted hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-50"
                 >
                   <Trash2 size={15} />
                 </button>
@@ -679,7 +727,7 @@ function TestimonialsTab() {
 
   return (
     <>
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide pb-1">
         {[
           { key: 'all', label: 'All', count: testimonials.length },
           { key: 'pending', label: 'Pending', count: pendingCount },
@@ -688,15 +736,15 @@ function TestimonialsTab() {
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
               filter === f.key
-                ? 'bg-primary text-white'
-                : 'bg-surface text-muted hover:text-secondary'
+                ? 'bg-accent text-white shadow-sm shadow-accent/20'
+                : 'bg-white text-muted border border-border/50 hover:text-secondary hover:border-border'
             }`}
           >
             {f.label}
-            <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full ${
-              filter === f.key ? 'bg-white/20' : 'bg-border/50'
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+              filter === f.key ? 'bg-white/20' : 'bg-surface'
             }`}>
               {f.count}
             </span>
@@ -705,18 +753,23 @@ function TestimonialsTab() {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-center py-20 text-muted text-sm">No testimonials found</p>
+        <div className="text-center py-20 bg-white rounded-2xl border border-border/40">
+          <div className="w-14 h-14 rounded-2xl bg-surface flex items-center justify-center mx-auto mb-4">
+            <MessageSquare size={24} className="text-muted" />
+          </div>
+          <p className="text-muted text-sm font-medium">No testimonials found</p>
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {filtered.map((t) => (
-            <div key={t.id} className="bg-white rounded-xl border border-border/50 p-5 hover:shadow-sm transition-shadow">
+            <div key={t.id} className="bg-white rounded-2xl border border-border/40 p-5 hover:shadow-md transition-all">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  <div className="w-11 h-11 rounded-full ring-2 ring-border/30 bg-gradient-to-br from-accent/10 to-purple-500/10 flex items-center justify-center overflow-hidden flex-shrink-0">
                     {t.User?.avatar_url ? (
                       <img src={t.User.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-xs font-semibold text-primary">{t.User?.name?.charAt(0)?.toUpperCase()}</span>
+                      <span className="text-sm font-bold text-accent">{t.User?.name?.charAt(0)?.toUpperCase()}</span>
                     )}
                   </div>
                   <div>
@@ -724,9 +777,11 @@ function TestimonialsTab() {
                     <p className="text-xs text-muted">{t.User?.email}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
-                  <span className={`text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                    t.approved ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                <div className="flex items-center gap-2.5 flex-shrink-0 flex-wrap justify-end">
+                  <span className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
+                    t.approved
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'
+                      : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
                   }`}>
                     {t.approved ? 'Approved' : 'Pending'}
                   </span>
@@ -735,16 +790,16 @@ function TestimonialsTab() {
                       <Star key={s} size={14} className={s <= t.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200'} />
                     ))}
                   </div>
-                  <span className="text-xs text-muted">{formatDate(t.createdAt)}</span>
+                  <span className="text-[11px] text-muted font-medium">{formatDate(t.createdAt)}</span>
                 </div>
               </div>
               <p className="mt-3 text-sm text-secondary leading-relaxed">{t.content}</p>
-              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/30">
+              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border/30">
                 {!t.approved && (
                   <button
                     onClick={() => handleApprove(t.id)}
                     disabled={actionLoading === t.id}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-all disabled:opacity-50"
                   >
                     <CheckCircle size={13} /> Approve
                   </button>
@@ -753,7 +808,7 @@ function TestimonialsTab() {
                   <button
                     onClick={() => handleReject(t.id)}
                     disabled={actionLoading === t.id}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-amber-50 text-amber-600 hover:bg-amber-100 transition-all disabled:opacity-50"
                   >
                     <XCircle size={13} /> Reject
                   </button>
@@ -761,7 +816,7 @@ function TestimonialsTab() {
                 <button
                   onClick={() => setConfirmDelete(t.id)}
                   disabled={deleting === t.id}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-surface text-muted hover:text-red-500 transition-colors disabled:opacity-50 ml-auto"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-surface text-muted hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-50 ml-auto"
                 >
                   <Trash2 size={13} /> Delete
                 </button>
@@ -809,50 +864,56 @@ function VisitorsTab() {
 
   const truncate = (str, len = 40) => str && str.length > len ? str.slice(0, len) + '...' : str || '—';
 
+  const methodStyle = (method) => {
+    switch (method) {
+      case 'GET': return 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white';
+      case 'POST': return 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white';
+      case 'DELETE': return 'bg-gradient-to-r from-red-500 to-rose-500 text-white';
+      default: return 'bg-gradient-to-r from-amber-500 to-orange-500 text-white';
+    }
+  };
+
   if (loading) return <Spinner className="py-32" />;
 
   return (
     <>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border/50">
-              <th className="text-left py-3 px-3 text-xs font-medium text-muted uppercase tracking-wider">IP</th>
-              <th className="text-left py-3 px-3 text-xs font-medium text-muted uppercase tracking-wider">Path</th>
-              <th className="text-left py-3 px-3 text-xs font-medium text-muted uppercase tracking-wider">Method</th>
-              <th className="text-left py-3 px-3 text-xs font-medium text-muted uppercase tracking-wider hidden md:table-cell">Referrer</th>
-              <th className="text-left py-3 px-3 text-xs font-medium text-muted uppercase tracking-wider hidden lg:table-cell">User Agent</th>
-              <th className="text-left py-3 px-3 text-xs font-medium text-muted uppercase tracking-wider">Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visitors.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="text-center py-20 text-muted">No visitors recorded</td>
+      <div className="bg-white rounded-2xl border border-border/40 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border/40 bg-surface/50">
+                <th className="text-left py-3.5 px-4 text-[11px] font-semibold text-muted uppercase tracking-wider">IP</th>
+                <th className="text-left py-3.5 px-4 text-[11px] font-semibold text-muted uppercase tracking-wider">Path</th>
+                <th className="text-left py-3.5 px-4 text-[11px] font-semibold text-muted uppercase tracking-wider">Method</th>
+                <th className="text-left py-3.5 px-4 text-[11px] font-semibold text-muted uppercase tracking-wider hidden md:table-cell">Referrer</th>
+                <th className="text-left py-3.5 px-4 text-[11px] font-semibold text-muted uppercase tracking-wider hidden lg:table-cell">User Agent</th>
+                <th className="text-left py-3.5 px-4 text-[11px] font-semibold text-muted uppercase tracking-wider">Time</th>
               </tr>
-            ) : (
-              visitors.map((v) => (
-                <tr key={v.id} className="border-b border-border/30 hover:bg-surface/50 transition-colors">
-                  <td className="py-3 px-3 text-secondary font-mono text-xs">{v.ip}</td>
-                  <td className="py-3 px-3 text-secondary text-xs max-w-[200px] truncate">{v.path}</td>
-                  <td className="py-3 px-3">
-                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${
-                      v.method === 'GET' ? 'bg-emerald-50 text-emerald-600' :
-                      v.method === 'POST' ? 'bg-blue-50 text-blue-600' :
-                      v.method === 'DELETE' ? 'bg-red-50 text-red-600' :
-                      'bg-amber-50 text-amber-600'
-                    }`}>
-                      {v.method}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3 text-xs text-muted hidden md:table-cell max-w-[150px] truncate">{v.referrer || '—'}</td>
-                  <td className="py-3 px-3 text-xs text-muted hidden lg:table-cell max-w-[200px] truncate">{truncate(v.user_agent, 50)}</td>
-                  <td className="py-3 px-3 text-xs text-muted whitespace-nowrap">{formatDate(v.createdAt)}</td>
+            </thead>
+            <tbody>
+              {visitors.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-20 text-muted text-sm">No visitors recorded</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                visitors.map((v) => (
+                  <tr key={v.id} className="border-b border-border/30 hover:bg-surface/30 transition-colors">
+                    <td className="py-3 px-4 text-secondary font-mono text-xs">{v.ip}</td>
+                    <td className="py-3 px-4 text-secondary text-xs max-w-[200px] truncate">{v.path}</td>
+                    <td className="py-3 px-4">
+                      <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${methodStyle(v.method)}`}>
+                        {v.method}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-xs text-muted hidden md:table-cell max-w-[150px] truncate">{v.referrer || '—'}</td>
+                    <td className="py-3 px-4 text-xs text-muted hidden lg:table-cell max-w-[200px] truncate">{truncate(v.user_agent, 50)}</td>
+                    <td className="py-3 px-4 text-xs text-muted whitespace-nowrap font-medium">{formatDate(v.createdAt)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {totalPages > 1 && (
@@ -865,21 +926,21 @@ function VisitorsTab() {
 /* ─── Pagination ─── */
 function Pagination({ page, totalPages, onChange }) {
   return (
-    <div className="flex items-center justify-center gap-3 mt-8">
+    <div className="flex items-center justify-center gap-2 mt-8">
       <button
         onClick={() => onChange(page - 1)}
         disabled={page <= 1}
-        className="w-9 h-9 rounded-lg bg-surface flex items-center justify-center text-muted hover:text-primary transition-colors disabled:opacity-30"
+        className="w-10 h-10 rounded-full bg-white border border-border/50 flex items-center justify-center text-muted hover:text-primary hover:border-border transition-all disabled:opacity-30"
       >
         <ChevronLeft size={16} />
       </button>
-      <span className="text-sm text-secondary">
-        Page {page} of {totalPages}
+      <span className="text-sm text-secondary font-medium px-3">
+        {page} / {totalPages}
       </span>
       <button
         onClick={() => onChange(page + 1)}
         disabled={page >= totalPages}
-        className="w-9 h-9 rounded-lg bg-surface flex items-center justify-center text-muted hover:text-primary transition-colors disabled:opacity-30"
+        className="w-10 h-10 rounded-full bg-white border border-border/50 flex items-center justify-center text-muted hover:text-primary hover:border-border transition-all disabled:opacity-30"
       >
         <ChevronRight size={16} />
       </button>
