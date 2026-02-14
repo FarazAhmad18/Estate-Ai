@@ -155,17 +155,18 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-16">
-      <div className="max-w-6xl mx-auto px-6">
+    <div className="min-h-screen pt-24 pb-16 mesh-gradient">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4 animate-fade-in-up">
           <div>
-            <h1 className="text-3xl font-semibold text-primary tracking-tight">Dashboard</h1>
+            <p className="text-xs font-semibold uppercase tracking-wider text-accent mb-2">Agent Portal</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">Dashboard</h1>
             <p className="mt-1 text-sm text-muted">Welcome back, {user?.name?.split(' ')[0]}</p>
           </div>
           <Link
             to="/properties/create"
-            className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 text-white px-6 py-3 rounded-full text-sm font-semibold btn-primary w-fit"
           >
             <Plus size={16} /> Add Property
           </Link>
@@ -173,75 +174,33 @@ export default function Dashboard() {
 
         {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <div className="bg-white rounded-2xl border border-border/50 p-5">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-                <Building2 size={18} className="text-primary" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-fade-in-up stagger-1">
+            {[
+              { label: 'Total Properties', value: stats.total, icon: Building2, gradient: 'from-blue-500 to-blue-600', bg: 'bg-blue-50' },
+              { label: 'Active Listings', value: stats.available, icon: Home, gradient: 'from-emerald-500 to-emerald-600', bg: 'bg-emerald-50' },
+              { label: 'Sold', value: stats.sold, icon: CheckCircle2, gradient: 'from-red-500 to-red-600', bg: 'bg-red-50' },
+              { label: 'Rented', value: stats.rented, icon: TrendingUp, gradient: 'from-blue-500 to-indigo-600', bg: 'bg-blue-50' },
+              { label: 'Avg Rating', value: stats.avgRating || '—', suffix: stats.avgRating ? '/ 5' : '', icon: Star, gradient: 'from-amber-500 to-orange-500', bg: 'bg-amber-50' },
+              { label: 'Reviews', value: stats.totalReviews || 0, icon: User, gradient: 'from-purple-500 to-violet-600', bg: 'bg-purple-50' },
+              { label: 'Total Saves', value: stats.totalFavorites || 0, icon: Heart, gradient: 'from-rose-500 to-pink-600', bg: 'bg-rose-50' },
+              { label: 'Member Since', value: formatDate(stats.joinedAt), icon: CalendarDays, gradient: 'from-amber-500 to-orange-500', bg: 'bg-amber-50', isDate: true },
+            ].map((s) => (
+              <div key={s.label} className="bg-white rounded-2xl border border-border/50 p-5 hover:shadow-md hover:shadow-black/[0.03] transition-all duration-200">
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.gradient} flex items-center justify-center mb-3 shadow-sm`}>
+                  <s.icon size={18} className="text-white" />
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <p className={`font-bold text-primary ${s.isDate ? 'text-sm' : 'text-2xl'}`}>{s.value}</p>
+                  {s.suffix && <p className="text-xs text-muted">{s.suffix}</p>}
+                </div>
+                <p className="text-xs text-muted mt-0.5">{s.label}</p>
               </div>
-              <p className="text-2xl font-semibold text-primary">{stats.total}</p>
-              <p className="text-xs text-muted mt-0.5">Total Properties</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-border/50 p-5">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-3">
-                <Home size={18} className="text-emerald-600" />
-              </div>
-              <p className="text-2xl font-semibold text-primary">{stats.available}</p>
-              <p className="text-xs text-muted mt-0.5">Active Listings</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-border/50 p-5">
-              <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center mb-3">
-                <CheckCircle2 size={18} className="text-red-500" />
-              </div>
-              <p className="text-2xl font-semibold text-primary">{stats.sold}</p>
-              <p className="text-xs text-muted mt-0.5">Sold</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-border/50 p-5">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mb-3">
-                <TrendingUp size={18} className="text-blue-500" />
-              </div>
-              <p className="text-2xl font-semibold text-primary">{stats.rented}</p>
-              <p className="text-xs text-muted mt-0.5">Rented</p>
-            </div>
-          </div>
-        )}
-        {stats && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-2xl border border-border/50 p-5">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mb-3">
-                <Star size={18} className="text-amber-500" />
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <p className="text-2xl font-semibold text-primary">{stats.avgRating || '—'}</p>
-                <p className="text-xs text-muted">/ 5</p>
-              </div>
-              <p className="text-xs text-muted mt-0.5">Avg Rating</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-border/50 p-5">
-              <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center mb-3">
-                <User size={18} className="text-purple-500" />
-              </div>
-              <p className="text-2xl font-semibold text-primary">{stats.totalReviews || 0}</p>
-              <p className="text-xs text-muted mt-0.5">Reviews</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-border/50 p-5">
-              <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center mb-3">
-                <Heart size={18} className="text-rose-500" />
-              </div>
-              <p className="text-2xl font-semibold text-primary">{stats.totalFavorites || 0}</p>
-              <p className="text-xs text-muted mt-0.5">Total Saves</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-border/50 p-5">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mb-3">
-                <CalendarDays size={18} className="text-amber-500" />
-              </div>
-              <p className="text-sm font-semibold text-primary mt-1">{formatDate(stats.joinedAt)}</p>
-              <p className="text-xs text-muted mt-0.5">Member Since</p>
-            </div>
+            ))}
           </div>
         )}
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-surface rounded-xl p-1 mb-8 w-fit">
+        <div className="flex gap-1 bg-white rounded-xl p-1 mb-8 w-fit border border-border/50 shadow-sm animate-fade-in-up stagger-2">
           {[
             { key: 'listings', label: 'My Listings' },
             { key: 'reviews', label: `Reviews${stats?.totalReviews ? ` (${stats.totalReviews})` : ''}` },
@@ -250,9 +209,9 @@ export default function Dashboard() {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                 tab === t.key
-                  ? 'bg-white text-primary shadow-sm'
+                  ? 'bg-accent text-white shadow-sm'
                   : 'text-muted hover:text-secondary'
               }`}
             >
@@ -265,15 +224,15 @@ export default function Dashboard() {
         {tab === 'listings' && (
           <>
             {/* Status Filter */}
-            <div className="flex gap-2 mb-6">
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-1 scrollbar-hide">
               {['All', 'Available', 'Sold', 'Rented'].map((s) => (
                 <button
                   key={s}
                   onClick={() => setStatusFilter(s)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-full text-xs font-semibold transition-all whitespace-nowrap ${
                     statusFilter === s
-                      ? 'bg-primary text-white'
-                      : 'bg-surface text-secondary border border-border/50'
+                      ? 'bg-accent text-white shadow-sm'
+                      : 'bg-white text-secondary border border-border/50 hover:border-accent/30'
                   }`}
                 >
                   {s}{s !== 'All' && stats ? ` (${s === 'Available' ? stats.available : s === 'Sold' ? stats.sold : stats.rented})` : ''}
@@ -284,9 +243,11 @@ export default function Dashboard() {
             {loading ? (
               <Spinner className="py-32" />
             ) : filteredProperties.length === 0 ? (
-              <div className="text-center py-32 bg-surface rounded-2xl">
-                <Building2 size={40} className="mx-auto text-muted mb-4" />
-                <p className="text-lg font-medium text-primary">
+              <div className="text-center py-32 bg-white rounded-2xl border border-border/50">
+                <div className="w-16 h-16 rounded-2xl bg-surface flex items-center justify-center mx-auto mb-5">
+                  <Building2 size={28} className="text-muted" />
+                </div>
+                <p className="text-lg font-bold text-primary">
                   {statusFilter === 'All' ? 'No properties yet' : `No ${statusFilter.toLowerCase()} properties`}
                 </p>
                 <p className="mt-2 text-sm text-muted">
@@ -295,7 +256,7 @@ export default function Dashboard() {
                 {statusFilter === 'All' && (
                   <Link
                     to="/properties/create"
-                    className="inline-flex items-center gap-2 mt-6 bg-primary text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
+                    className="inline-flex items-center gap-2 mt-6 text-white px-6 py-3 rounded-full text-sm font-semibold btn-primary"
                   >
                     <Plus size={16} /> Add Property
                   </Link>
@@ -306,9 +267,9 @@ export default function Dashboard() {
                 {filteredProperties.map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center gap-5 bg-white rounded-xl border border-border/50 p-4 hover:shadow-sm transition-shadow"
+                    className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 bg-white rounded-2xl border border-border/50 p-4 sm:p-5 hover:shadow-md hover:shadow-black/[0.03] transition-all duration-200"
                   >
-                    <div className="w-20 h-20 rounded-xl bg-surface overflow-hidden flex-shrink-0">
+                    <div className="w-full sm:w-20 h-40 sm:h-20 rounded-xl bg-surface overflow-hidden flex-shrink-0">
                       {p.PropertyImages?.[0]?.image_url ? (
                         <img src={p.PropertyImages[0].image_url} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -320,19 +281,19 @@ export default function Dashboard() {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[11px] font-medium bg-surface px-2 py-0.5 rounded text-muted">
+                        <span className="text-[11px] font-semibold bg-surface px-2.5 py-0.5 rounded-full text-muted">
                           {p.type}
                         </span>
-                        <span className={`text-[11px] font-medium px-2 py-0.5 rounded ${
+                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${
                           p.purpose === 'Sale' ? 'bg-accent/10 text-accent' : 'bg-success/10 text-success'
                         }`}>
                           {p.purpose}
                         </span>
-                        <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${statusColor(p.status || 'Available')}`}>
+                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${statusColor(p.status || 'Available')}`}>
                           {p.status || 'Available'}
                         </span>
                       </div>
-                      <p className="font-semibold text-primary mt-1">PKR {formatPrice(p.price)}</p>
+                      <p className="font-bold text-primary mt-1.5">PKR {formatPrice(p.price)}</p>
                       <p className="text-xs text-muted mt-0.5">{p.location}</p>
                     </div>
 
@@ -341,21 +302,21 @@ export default function Dashboard() {
                       <div className="relative">
                         <button
                           onClick={() => setStatusMenu(statusMenu === p.id ? null : p.id)}
-                          className="h-9 px-3 rounded-lg bg-surface flex items-center gap-1.5 text-xs font-medium text-secondary hover:text-accent transition-colors"
+                          className="h-9 px-3 rounded-xl bg-surface flex items-center gap-1.5 text-xs font-semibold text-secondary hover:text-accent transition-colors"
                         >
                           <Clock size={13} />
-                          Status
+                          <span className="hidden sm:inline">Status</span>
                           <ChevronDown size={12} />
                         </button>
                         {statusMenu === p.id && (
-                          <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-xl shadow-lg border border-border/50 py-1 z-10">
+                          <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-xl shadow-xl shadow-black/10 border border-border/50 py-1.5 z-10 animate-fade-in-down">
                             {['Available', 'Sold', 'Rented'].map((s) => (
                               <button
                                 key={s}
                                 onClick={() => handleStatusChange(p.id, s)}
-                                className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors ${
+                                className={`w-full text-left px-3.5 py-2 text-xs font-medium transition-colors ${
                                   (p.status || 'Available') === s
-                                    ? 'bg-surface text-primary'
+                                    ? 'bg-accent/5 text-accent'
                                     : 'text-secondary hover:bg-surface'
                                 }`}
                               >
@@ -370,20 +331,20 @@ export default function Dashboard() {
                       </div>
                       <Link
                         to={`/properties/${p.id}`}
-                        className="w-9 h-9 rounded-lg bg-surface flex items-center justify-center text-muted hover:text-accent transition-colors"
+                        className="w-9 h-9 rounded-xl bg-surface flex items-center justify-center text-muted hover:text-accent hover:bg-accent/5 transition-all"
                       >
                         <Eye size={15} />
                       </Link>
                       <Link
                         to={`/properties/${p.id}/edit`}
-                        className="w-9 h-9 rounded-lg bg-surface flex items-center justify-center text-muted hover:text-accent transition-colors"
+                        className="w-9 h-9 rounded-xl bg-surface flex items-center justify-center text-muted hover:text-accent hover:bg-accent/5 transition-all"
                       >
                         <Pencil size={15} />
                       </Link>
                       <button
                         onClick={() => handleDelete(p.id)}
                         disabled={deleting === p.id}
-                        className="w-9 h-9 rounded-lg bg-surface flex items-center justify-center text-muted hover:text-red-500 transition-colors disabled:opacity-50"
+                        className="w-9 h-9 rounded-xl bg-surface flex items-center justify-center text-muted hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-50"
                       >
                         <Trash2 size={15} />
                       </button>
@@ -401,18 +362,18 @@ export default function Dashboard() {
             {stats?.recentReviews && stats.recentReviews.length > 0 ? (
               <div className="space-y-4">
                 {stats.recentReviews.map((review) => (
-                  <div key={review.id} className="bg-white rounded-2xl border border-border/50 p-6">
+                  <div key={review.id} className="bg-white rounded-2xl border border-border/50 p-6 hover:shadow-md hover:shadow-black/[0.03] transition-all duration-200">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-surface flex items-center justify-center overflow-hidden">
+                        <div className="w-10 h-10 rounded-full gradient-accent flex items-center justify-center overflow-hidden">
                           {review.Reviewer?.avatar_url ? (
                             <img src={review.Reviewer.avatar_url} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <User size={16} className="text-muted" />
+                            <span className="text-xs font-bold text-white">{review.Reviewer?.name?.charAt(0)?.toUpperCase() || '?'}</span>
                           )}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-primary">{review.Reviewer?.name || 'Anonymous'}</p>
+                          <p className="text-sm font-semibold text-primary">{review.Reviewer?.name || 'Anonymous'}</p>
                           <p className="text-xs text-muted">{formatDate(review.createdAt)}</p>
                         </div>
                       </div>
@@ -421,7 +382,7 @@ export default function Dashboard() {
                           <Star
                             key={s}
                             size={14}
-                            className={s <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}
+                            className={s <= review.rating ? 'fill-warning text-warning' : 'text-border'}
                           />
                         ))}
                       </div>
@@ -430,16 +391,18 @@ export default function Dashboard() {
                   </div>
                 ))}
                 {stats.totalReviews > 3 && (
-                  <p className="text-center text-sm text-muted">
+                  <p className="text-center text-sm text-muted py-2">
                     Showing latest 3 of {stats.totalReviews} reviews.{' '}
-                    <a href={`/agents/${user?.id}`} className="text-accent hover:underline">View all</a>
+                    <a href={`/agents/${user?.id}`} className="text-accent font-semibold hover:underline underline-offset-4">View all</a>
                   </p>
                 )}
               </div>
             ) : (
-              <div className="text-center py-32 bg-surface rounded-2xl">
-                <Star size={40} className="mx-auto text-muted mb-4" />
-                <p className="text-lg font-medium text-primary">No reviews yet</p>
+              <div className="text-center py-32 bg-white rounded-2xl border border-border/50">
+                <div className="w-16 h-16 rounded-2xl bg-surface flex items-center justify-center mx-auto mb-5">
+                  <Star size={28} className="text-muted" />
+                </div>
+                <p className="text-lg font-bold text-primary">No reviews yet</p>
                 <p className="mt-2 text-sm text-muted">Reviews from buyers will appear here.</p>
               </div>
             )}
@@ -450,67 +413,71 @@ export default function Dashboard() {
         {tab === 'profile' && (
           <div className="max-w-lg">
             {/* Avatar */}
-            <div className="flex items-center gap-5 mb-8">
+            <div className="flex items-center gap-5 mb-8 bg-white rounded-2xl border border-border/50 p-6">
               <div className="relative">
-                <div className="w-20 h-20 rounded-full bg-surface flex items-center justify-center overflow-hidden">
+                <div className="w-20 h-20 rounded-full gradient-accent flex items-center justify-center overflow-hidden ring-4 ring-white shadow-lg">
                   {user?.avatar_url ? (
                     <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <User size={28} className="text-muted" />
+                    <span className="text-xl font-bold text-white">{user?.name?.charAt(0)?.toUpperCase() || '?'}</span>
                   )}
                 </div>
-                <label className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/90 transition-colors">
+                <label className="absolute -bottom-1 -right-1 w-8 h-8 bg-white text-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-surface transition-colors shadow-lg border border-border/50">
                   <Camera size={14} />
                   <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
                 </label>
               </div>
               <div>
-                <p className="font-medium text-primary">{user?.name}</p>
-                <p className="text-xs text-muted">{user?.role}</p>
+                <p className="font-bold text-primary">{user?.name}</p>
+                <span className="inline-block mt-1 text-[10px] font-semibold uppercase tracking-wider text-white bg-accent/90 px-2.5 py-0.5 rounded-full">
+                  {user?.role}
+                </span>
                 {uploadingAvatar && <p className="text-xs text-accent mt-1">Uploading...</p>}
               </div>
             </div>
 
             {/* Form */}
-            <form onSubmit={handleProfileSave} className="space-y-5">
-              <div>
-                <label className="block text-xs font-medium text-secondary mb-2">Full Name</label>
-                <input
-                  type="text"
-                  value={profile.name}
-                  onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                  required
-                  className="w-full px-4 py-3 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-secondary mb-2">Email</label>
-                <input
-                  type="email"
-                  value={profile.email}
-                  onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                  required
-                  className="w-full px-4 py-3 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-secondary mb-2">Phone</label>
-                <input
-                  type="text"
-                  value={profile.phone}
-                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                  className="w-full px-4 py-3 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors"
-                  placeholder="+92 300 1234567"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={saving}
-                className="bg-primary text-white px-8 py-3 rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
-              >
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
-            </form>
+            <div className="bg-white rounded-2xl border border-border/50 p-6">
+              <form onSubmit={handleProfileSave} className="space-y-5">
+                <div>
+                  <label className="block text-xs font-semibold text-secondary mb-2">Full Name</label>
+                  <input
+                    type="text"
+                    value={profile.name}
+                    onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                    required
+                    className="w-full px-4 py-3.5 bg-surface rounded-xl text-sm border border-border/60 focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-secondary mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={profile.email}
+                    onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                    required
+                    className="w-full px-4 py-3.5 bg-surface rounded-xl text-sm border border-border/60 focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-secondary mb-2">Phone</label>
+                  <input
+                    type="text"
+                    value={profile.phone}
+                    onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                    className="w-full px-4 py-3.5 bg-surface rounded-xl text-sm border border-border/60 focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all"
+                    placeholder="+92 300 1234567"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="text-white px-8 py-3 rounded-xl text-sm font-semibold btn-primary disabled:opacity-50"
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </form>
+            </div>
           </div>
         )}
       </div>
