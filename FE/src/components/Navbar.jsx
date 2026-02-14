@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useMessages } from '../context/MessageContext';
 import { Menu, X, User, LogOut, LayoutDashboard, ChevronDown, Heart, Shield, MessageSquare, Home, Building2, Sparkles } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Navbar() {
   const { user, loading, logout } = useAuth();
@@ -43,6 +44,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     logout();
+    toast.success('Signed out successfully');
     navigate('/');
   };
 

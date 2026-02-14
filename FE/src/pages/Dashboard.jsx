@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [totalPages, setTotalPages] = useState(1);
   const [tab, setTab] = useState(() => searchParams.get('tab') || 'listings');
   const [deleting, setDeleting] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const [statusFilter, setStatusFilter] = useState('All');
   const [statusMenu, setStatusMenu] = useState(null);
 
@@ -68,6 +69,7 @@ export default function Dashboard() {
   const handleDelete = async (id) => {
     if (deleting) return;
     setDeleting(id);
+    setConfirmDelete(null);
     try {
       await api.delete(`/properties/${id}`);
       toast.success('Property deleted');
@@ -342,7 +344,7 @@ export default function Dashboard() {
                         <Pencil size={15} />
                       </Link>
                       <button
-                        onClick={() => handleDelete(p.id)}
+                        onClick={() => setConfirmDelete(p)}
                         disabled={deleting === p.id}
                         className="w-9 h-9 rounded-xl bg-surface flex items-center justify-center text-muted hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-50"
                       >
@@ -481,6 +483,37 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setConfirmDelete(null)} />
+          <div className="relative bg-white rounded-2xl p-6 sm:p-8 w-full max-w-sm shadow-2xl shadow-black/10 animate-scale-in">
+            <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center mb-4">
+              <Trash2 size={20} className="text-red-500" />
+            </div>
+            <h3 className="text-lg font-bold text-primary">Delete Property</h3>
+            <p className="mt-2 text-sm text-muted leading-relaxed">
+              Are you sure you want to delete <span className="font-semibold text-secondary">{confirmDelete.location}</span>? This will also notify any active conversations. This action cannot be undone.
+            </p>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="flex-1 px-4 py-3 bg-surface text-secondary rounded-xl text-sm font-semibold hover:bg-surface-2 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(confirmDelete.id)}
+                disabled={deleting}
+                className="flex-1 px-4 py-3 bg-danger text-white rounded-xl text-sm font-semibold hover:bg-red-600 transition-colors disabled:opacity-50"
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

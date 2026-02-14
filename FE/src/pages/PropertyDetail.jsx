@@ -167,6 +167,7 @@ export default function PropertyDetail() {
   };
 
   const handleDeleteReview = async (reviewId) => {
+    if (!window.confirm('Are you sure you want to delete this review?')) return;
     try {
       await api.delete(`/agents/reviews/${reviewId}`);
       setReviews((prev) => prev.filter((r) => r.id !== reviewId));
@@ -212,7 +213,33 @@ export default function PropertyDetail() {
     }
   };
 
-  if (loading) return <Spinner className="min-h-screen pt-24" />;
+  if (loading) return (
+    <div className="min-h-screen pt-20 pb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center gap-3 mb-6 mt-4">
+          <div className="w-10 h-10 rounded-xl skeleton" />
+          <div className="h-4 w-40 skeleton rounded-lg" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
+          <div className="lg:col-span-2 space-y-8">
+            <div className="aspect-[16/10] sm:aspect-[16/9] skeleton rounded-2xl" />
+            <div className="space-y-3">
+              <div className="flex gap-2"><div className="h-7 w-20 skeleton rounded-full" /><div className="h-7 w-20 skeleton rounded-full" /></div>
+              <div className="h-9 w-48 skeleton rounded-lg" />
+              <div className="h-4 w-64 skeleton rounded-lg" />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[1,2,3,4].map(i => <div key={i} className="h-24 skeleton rounded-2xl" />)}
+            </div>
+            <div><div className="h-5 w-28 skeleton rounded-lg mb-3" /><div className="h-32 skeleton rounded-2xl" /></div>
+          </div>
+          <div className="space-y-6">
+            <div className="h-80 skeleton rounded-2xl" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   if (!property) return null;
 
   const formatPrice = (price) => {

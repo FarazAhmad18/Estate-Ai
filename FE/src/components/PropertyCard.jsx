@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, BedDouble, Maximize, ArrowUpRight, Heart } from 'lucide-react';
 
 export default function PropertyCard({ property, isFavorited, onToggleFavorite }) {
+  const [heartPop, setHeartPop] = useState(false);
   const formatPrice = (price) => {
     if (price >= 10000000) return `${(price / 10000000).toFixed(1)} Cr`;
     if (price >= 100000) return `${(price / 100000).toFixed(1)} Lac`;
@@ -46,11 +48,15 @@ export default function PropertyCard({ property, isFavorited, onToggleFavorite }
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              setHeartPop(true);
+              setTimeout(() => setHeartPop(false), 400);
               onToggleFavorite(property.id);
             }}
             className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 shadow-sm ${
+              heartPop ? 'animate-heart-pop' : ''
+            } ${
               isFavorited
-                ? 'bg-red-500 text-white scale-110'
+                ? 'bg-red-500 text-white'
                 : 'bg-white/95 backdrop-blur-sm text-secondary hover:bg-white hover:scale-110'
             }`}
           >

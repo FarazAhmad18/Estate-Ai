@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import api from '../lib/api';
 import PropertyCard from '../components/PropertyCard';
 import Spinner from '../components/Spinner';
+import PropertyCardSkeleton from '../components/PropertyCardSkeleton';
 
 export default function SavedProperties() {
   const [properties, setProperties] = useState([]);
@@ -27,6 +28,7 @@ export default function SavedProperties() {
 
   useEffect(() => {
     fetchSaved(page);
+    if (page > 1) window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [page]);
 
   const handleToggleFavorite = async (propertyId) => {
@@ -49,7 +51,11 @@ export default function SavedProperties() {
         </div>
 
         {loading ? (
-          <Spinner className="py-32" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <PropertyCardSkeleton key={i} />
+            ))}
+          </div>
         ) : properties.length === 0 ? (
           <div className="text-center py-32 bg-white rounded-2xl border border-border/50">
             <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-5">

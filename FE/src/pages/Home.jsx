@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import PropertyCard from '../components/PropertyCard';
+import PropertyCardSkeleton from '../components/PropertyCardSkeleton';
 import LocationAutocomplete from '../components/LocationAutocomplete';
 
 import heroInterior from '../assets/hero-interior.png';
@@ -23,6 +24,7 @@ import avatar4 from '../assets/avatar-4.png';
 export default function Home() {
   const { user } = useAuth();
   const [featured, setFeatured] = useState([]);
+  const [featuredLoading, setFeaturedLoading] = useState(true);
   const [favoriteIds, setFavoriteIds] = useState(new Set());
   const [search, setSearch] = useState('');
   const [testimonials, setTestimonials] = useState([]);
@@ -41,7 +43,8 @@ export default function Home() {
   useEffect(() => {
     api.get('/properties?limit=6&sortBy=createdAt&order=DESC')
       .then((res) => setFeatured(res.data.properties))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setFeaturedLoading(false));
     fetchTestimonials();
   }, []);
 
@@ -446,7 +449,7 @@ export default function Home() {
       </section>
 
       {/* Featured Properties */}
-      {featured.length > 0 && (
+      {(featuredLoading || featured.length > 0) && (
         <section className="py-20 sm:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 sm:mb-12 gap-4">
@@ -468,15 +471,18 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featured.map((property, index) => (
-                <div key={property.id} className={index >= 3 ? 'hidden md:block' : ''}>
-                  <PropertyCard
-                    property={property}
-                    isFavorited={favoriteIds.has(property.id)}
-                    onToggleFavorite={handleToggleFavorite}
-                  />
-                </div>
-              ))}
+              {featuredLoading
+                ? Array.from({ length: 3 }).map((_, i) => <PropertyCardSkeleton key={i} />)
+                : featured.map((property, index) => (
+                    <div key={property.id} className={index >= 3 ? 'hidden md:block' : ''}>
+                      <PropertyCard
+                        property={property}
+                        isFavorited={favoriteIds.has(property.id)}
+                        onToggleFavorite={handleToggleFavorite}
+                      />
+                    </div>
+                  ))
+              }
             </div>
 
             <div className="mt-8 text-center md:hidden">

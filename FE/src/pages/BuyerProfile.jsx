@@ -217,7 +217,12 @@ export default function BuyerProfile() {
               disabled={saving}
               className="text-white px-8 py-3 rounded-xl text-sm font-semibold btn-primary disabled:opacity-50"
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? (
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Saving...
+                </span>
+              ) : 'Save Changes'}
             </button>
           </form>
         </div>

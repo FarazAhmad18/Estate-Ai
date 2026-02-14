@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import PropertyCard from '../components/PropertyCard';
 import LocationAutocomplete from '../components/LocationAutocomplete';
 import Spinner from '../components/Spinner';
+import PropertyCardSkeleton from '../components/PropertyCardSkeleton';
 
 const TYPES = ['All', 'House', 'Apartment', 'Villa', 'Commercial', 'Land'];
 const PURPOSES = ['All', 'Sale', 'Rent'];
@@ -75,6 +76,7 @@ export default function Properties() {
 
   useEffect(() => {
     fetchProperties(filters);
+    if (filters.page > 1) window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [filters.page, filters.sort]);
 
   useEffect(() => {
@@ -385,7 +387,11 @@ export default function Properties() {
 
         {/* Results */}
         {loading ? (
-          <Spinner className="py-32" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <PropertyCardSkeleton key={i} />
+            ))}
+          </div>
         ) : properties.length === 0 ? (
           <div className="text-center py-24 animate-fade-in-up">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-surface-2 mb-6">

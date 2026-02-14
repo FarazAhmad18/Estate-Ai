@@ -14,6 +14,7 @@ export default function Register() {
   const [showPw, setShowPw] = useState(false);
   const [showCpw, setShowCpw] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const update = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
@@ -34,12 +35,15 @@ export default function Register() {
   };
 
   const handleGoogle = async (credentialResponse) => {
+    setGoogleLoading(true);
     try {
       await googleLogin(credentialResponse.credential);
       toast.success('Welcome to EstateAI!');
       navigate('/');
     } catch (err) {
       toast.error(err.response?.data?.error || 'Google login failed');
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -100,14 +104,21 @@ export default function Register() {
 
           {/* Google Login */}
           <div className="flex justify-center">
-            <GoogleLogin
-              onSuccess={handleGoogle}
-              onError={() => toast.error('Google login failed')}
-              shape="pill"
-              size="large"
-              width="100%"
-              text="signup_with"
-            />
+            {googleLoading ? (
+              <div className="flex items-center gap-2 px-6 py-3 bg-surface rounded-full text-sm text-muted">
+                <div className="w-4 h-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+                Signing up with Google...
+              </div>
+            ) : (
+              <GoogleLogin
+                onSuccess={handleGoogle}
+                onError={() => toast.error('Google login failed')}
+                shape="pill"
+                size="large"
+                width="100%"
+                text="signup_with"
+              />
+            )}
           </div>
 
           <div className="flex items-center gap-3 my-5">

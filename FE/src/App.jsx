@@ -23,6 +23,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AgentProfile from './pages/AgentProfile';
 import Messages from './pages/Messages';
 import ChatBubble from './components/ChatBubble';
+import NotFound from './pages/NotFound';
 
 const AUTH_ROUTES = ['/login', '/register', '/verify-otp', '/forgot-password', '/reset-password'];
 
@@ -120,6 +121,7 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
         {!isAuthPage && !isAdminPage && !isMessagesPage && <Footer />}
