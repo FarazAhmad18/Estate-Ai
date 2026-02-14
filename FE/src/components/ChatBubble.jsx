@@ -116,16 +116,15 @@ export default function ChatBubble() {
     <>
       {/* Chat Panel */}
       {isOpen && (
-        <div className="fixed z-50 bg-white flex flex-col overflow-hidden inset-0 sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[400px] sm:h-[560px] sm:rounded-2xl sm:shadow-2xl sm:shadow-black/15 sm:border sm:border-border/60">
+        <div className="fixed z-50 bg-white flex flex-col overflow-hidden bottom-0 right-0 left-0 top-14 sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[360px] sm:h-[460px] sm:rounded-2xl sm:shadow-2xl sm:shadow-black/15 sm:border sm:border-border/60">
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border/40 flex-shrink-0" style={{ background: 'linear-gradient(to right, var(--color-accent, #3b82f6), #8b5cf6)' }}>
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
-                <Bot size={16} className="text-white" />
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 flex-shrink-0" style={{ background: 'linear-gradient(to right, var(--color-accent, #3b82f6), #8b5cf6)' }}>
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
+                <Bot size={14} className="text-white" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-white">Property Assistant</p>
-                <p className="text-[10px] text-white/70">Ask me anything about properties</p>
+                <p className="text-xs font-semibold text-white">Property Assistant</p>
               </div>
             </div>
             <button
