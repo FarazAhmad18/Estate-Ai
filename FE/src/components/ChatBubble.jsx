@@ -87,9 +87,8 @@ export default function ChatBubble() {
     setIsLoading(true);
 
     try {
-      // Build history from messages (exclude first greeting & properties)
       const history = messages
-        .filter((_, i) => i > 0) // skip initial greeting
+        .filter((_, i) => i > 0)
         .map(m => ({ role: m.role, text: m.text }));
 
       const res = await api.post('/ai/chat', { message: text, history });
@@ -117,11 +116,11 @@ export default function ChatBubble() {
     <>
       {/* Chat Panel */}
       {isOpen && (
-        <div className="fixed z-50 bg-white shadow-2xl shadow-black/15 border border-border/60 flex flex-col overflow-hidden animate-fade-in-up inset-0 sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[400px] sm:h-[560px] sm:rounded-2xl">
+        <div className="fixed z-50 bg-white flex flex-col overflow-hidden inset-0 sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[400px] sm:h-[560px] sm:rounded-2xl sm:shadow-2xl sm:shadow-black/15 sm:border sm:border-border/60">
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border/40" style={{ background: 'linear-gradient(to right, var(--color-accent, #3b82f6), #8b5cf6)' }}>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border/40 flex-shrink-0" style={{ background: 'linear-gradient(to right, var(--color-accent, #3b82f6), #8b5cf6)' }}>
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
                 <Bot size={16} className="text-white" />
               </div>
               <div>
@@ -131,23 +130,25 @@ export default function ChatBubble() {
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center text-white hover:bg-white/25 transition-colors"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-white/25 transition-colors"
+              style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
             >
               <X size={16} />
             </button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] ${msg.role === 'user' ? '' : ''}`}>
+                <div style={{ maxWidth: '85%' }}>
                   <div
                     className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                       msg.role === 'user'
                         ? 'bg-accent text-white rounded-br-md'
                         : 'bg-surface text-primary rounded-bl-md'
                     }`}
+                    style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
                   >
                     {msg.text}
                   </div>
@@ -178,7 +179,7 @@ export default function ChatBubble() {
           </div>
 
           {/* Input */}
-          <div className="px-4 py-3 border-t border-border/40">
+          <div className="px-4 py-3 border-t border-border/40 flex-shrink-0" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
             <div className="flex items-center gap-2">
               <input
                 ref={inputRef}
@@ -202,30 +203,19 @@ export default function ChatBubble() {
         </div>
       )}
 
-      {/* FAB */}
-      <button
-        onClick={() => setIsOpen(prev => !prev)}
-        className={`fixed bottom-6 right-4 sm:right-6 z-50 shadow-lg flex items-center justify-center transition-all duration-300 ${
-          isOpen
-            ? 'w-14 h-14 rounded-full scale-90'
-            : 'text-white hover:scale-105 hover:shadow-xl rounded-full pl-4 pr-5 h-14 gap-2.5'
-        }`}
-        style={isOpen
-          ? { backgroundColor: 'var(--color-secondary, #374151)', color: '#fff' }
-          : { background: 'linear-gradient(to right, var(--color-accent, #3b82f6), #8b5cf6)', color: '#fff' }
-        }
-      >
-        {isOpen ? (
-          <X size={22} />
-        ) : (
-          <>
-            <span className="relative flex items-center justify-center w-8 h-8 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
-              <Sparkles size={16} className="animate-pulse" />
-            </span>
-            <span className="text-sm font-semibold whitespace-nowrap">Ask AI</span>
-          </>
-        )}
-      </button>
+      {/* FAB - hidden on mobile when chat is open */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-4 sm:right-6 z-50 shadow-lg flex items-center justify-center text-white hover:scale-105 hover:shadow-xl rounded-full pl-4 pr-5 h-14 gap-2.5 transition-all duration-300"
+          style={{ background: 'linear-gradient(to right, var(--color-accent, #3b82f6), #8b5cf6)' }}
+        >
+          <span className="relative flex items-center justify-center w-8 h-8 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
+            <Sparkles size={16} className="animate-pulse" />
+          </span>
+          <span className="text-sm font-semibold whitespace-nowrap">Ask AI</span>
+        </button>
+      )}
     </>
   );
 }
