@@ -207,15 +207,19 @@ export default function ChatBubble() {
         onClick={() => setIsOpen(prev => !prev)}
         className={`fixed bottom-6 right-4 sm:right-6 z-50 shadow-lg flex items-center justify-center transition-all duration-300 ${
           isOpen
-            ? 'bg-secondary text-white w-14 h-14 rounded-full scale-90'
-            : 'bg-gradient-to-r from-accent to-violet-500 text-white hover:scale-105 hover:shadow-xl hover:shadow-accent/40 rounded-full pl-4 pr-5 h-14 gap-2.5'
+            ? 'w-14 h-14 rounded-full scale-90'
+            : 'text-white hover:scale-105 hover:shadow-xl rounded-full pl-4 pr-5 h-14 gap-2.5'
         }`}
+        style={isOpen
+          ? { backgroundColor: 'var(--color-secondary, #374151)', color: '#fff' }
+          : { background: 'linear-gradient(to right, var(--color-accent, #3b82f6), #8b5cf6)', color: '#fff' }
+        }
       >
         {isOpen ? (
           <X size={22} />
         ) : (
           <>
-            <span className="relative flex items-center justify-center w-8 h-8 bg-white/20 rounded-full">
+            <span className="relative flex items-center justify-center w-8 h-8 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
               <Sparkles size={16} className="animate-pulse" />
             </span>
             <span className="text-sm font-semibold whitespace-nowrap">Ask AI</span>

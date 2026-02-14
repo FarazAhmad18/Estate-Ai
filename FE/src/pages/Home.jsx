@@ -412,7 +412,7 @@ export default function Home() {
               <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-accent/[0.07] to-transparent rounded-full blur-2xl" />
               <div className="relative">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent to-violet-500 flex items-center justify-center shadow-lg shadow-accent/20">
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, var(--color-accent), #8b5cf6)' }}>
                     <Bot size={22} className="text-white" />
                   </div>
                   <div className="px-2.5 py-1 bg-accent/10 rounded-full text-[10px] font-bold uppercase tracking-wider text-accent">
@@ -452,7 +452,7 @@ export default function Home() {
               <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-violet-500/[0.07] to-transparent rounded-full blur-2xl" />
               <div className="relative">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, #8b5cf6, #ec4899)' }}>
                     <PenTool size={22} className="text-white" />
                   </div>
                   <div className="px-2.5 py-1 bg-violet-500/10 rounded-full text-[10px] font-bold uppercase tracking-wider text-violet-600">
@@ -494,7 +494,7 @@ export default function Home() {
               <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-emerald-500/[0.07] to-transparent rounded-full blur-2xl" />
               <div className="relative">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, #10b981, #14b8a6)' }}>
                     <TrendingUp size={22} className="text-white" />
                   </div>
                   <div className="px-2.5 py-1 bg-emerald-500/10 rounded-full text-[10px] font-bold uppercase tracking-wider text-emerald-600">
