@@ -232,11 +232,25 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Mobile hamburger */}
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden w-10 h-10 rounded-xl flex items-center justify-center text-primary hover:bg-surface transition-colors"
-            >
+            {/* Mobile right side */}
+            <div className="flex items-center gap-1 md:hidden">
+              {user && (
+                <Link
+                  to="/messages"
+                  className="relative w-10 h-10 rounded-xl flex items-center justify-center text-secondary/70 hover:bg-surface transition-colors"
+                >
+                  <MessageSquare size={18} />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center px-1 ring-2 ring-white">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              )}
+              <button
+                onClick={() => setMobileOpen(!mobileOpen)}
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-primary hover:bg-surface transition-colors"
+              >
               <div className="relative w-5 h-5">
                 <span className={`absolute left-0 block w-5 h-0.5 bg-current transition-all duration-300 ${
                   mobileOpen ? 'top-[9px] rotate-45' : 'top-1'
@@ -249,6 +263,7 @@ export default function Navbar() {
                 }`} />
               </div>
             </button>
+            </div>
           </div>
         </div>
       </nav>

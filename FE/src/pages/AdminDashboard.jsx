@@ -8,7 +8,6 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
-import Spinner from '../components/Spinner';
 import ConfirmModal from '../components/ConfirmModal';
 import UserProfilePanel from '../components/UserProfilePanel';
 
@@ -146,7 +145,16 @@ function OverviewTab() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <Spinner className="py-32" />;
+  if (loading) return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {[1,2,3,4,5,6].map(i => <div key={i} className="h-24 skeleton rounded-2xl" />)}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {[1,2].map(i => <div key={i} className="h-64 skeleton rounded-2xl" />)}
+      </div>
+    </div>
+  );
   if (!stats) return null;
 
   const charts = trends ? [
@@ -412,7 +420,19 @@ function UsersTab({ currentUserId }) {
       </form>
 
       {loading ? (
-        <Spinner className="py-32" />
+        <div className="space-y-3">
+          {[1,2,3,4,5].map(i => (
+            <div key={i} className="flex items-center gap-4 bg-white rounded-2xl border border-border/40 p-4">
+              <div className="w-11 h-11 rounded-full skeleton flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-32 skeleton rounded-lg" />
+                <div className="h-3 w-48 skeleton rounded-lg" />
+              </div>
+              <div className="h-4 w-20 skeleton rounded-lg hidden sm:block" />
+              <div className="w-9 h-9 skeleton rounded-xl" />
+            </div>
+          ))}
+        </div>
       ) : users.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-2xl border border-border/40">
           <div className="w-14 h-14 rounded-2xl bg-surface flex items-center justify-center mx-auto mb-4">
@@ -591,7 +611,22 @@ function PropertiesTab() {
       </form>
 
       {loading ? (
-        <Spinner className="py-32" />
+        <div className="space-y-3">
+          {[1,2,3,4,5].map(i => (
+            <div key={i} className="flex items-center gap-4 bg-white rounded-2xl border border-border/40 p-4">
+              <div className="w-16 h-16 rounded-xl skeleton flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="flex gap-2">
+                  <div className="h-4 w-16 skeleton rounded-full" />
+                  <div className="h-4 w-16 skeleton rounded-full" />
+                </div>
+                <div className="h-4 w-28 skeleton rounded-lg" />
+                <div className="h-3 w-40 skeleton rounded-lg" />
+              </div>
+              <div className="w-9 h-9 skeleton rounded-xl" />
+            </div>
+          ))}
+        </div>
       ) : properties.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-2xl border border-border/40">
           <div className="w-14 h-14 rounded-2xl bg-surface flex items-center justify-center mx-auto mb-4">
@@ -723,7 +758,27 @@ function TestimonialsTab() {
   const approvedCount = testimonials.filter((t) => t.approved === true).length;
   const pendingCount = testimonials.filter((t) => t.approved === false).length;
 
-  if (loading) return <Spinner className="py-32" />;
+  if (loading) return (
+    <div className="space-y-4">
+      <div className="flex gap-2 mb-6">
+        {[1,2,3].map(i => <div key={i} className="h-9 w-24 skeleton rounded-full" />)}
+      </div>
+      {[1,2,3].map(i => (
+        <div key={i} className="bg-white rounded-2xl border border-border/40 p-5 space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-full skeleton flex-shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-32 skeleton rounded-lg" />
+              <div className="h-3 w-44 skeleton rounded-lg" />
+            </div>
+            <div className="h-5 w-16 skeleton rounded-full" />
+          </div>
+          <div className="h-12 skeleton rounded-lg" />
+          <div className="h-8 w-full skeleton rounded-lg" />
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <>
@@ -873,7 +928,23 @@ function VisitorsTab() {
     }
   };
 
-  if (loading) return <Spinner className="py-32" />;
+  if (loading) return (
+    <div className="bg-white rounded-2xl border border-border/40 overflow-hidden">
+      <div className="border-b border-border/40 bg-surface/50 px-4 py-3.5 flex gap-8">
+        {[1,2,3,4,5,6].map(i => <div key={i} className="h-3 w-14 skeleton rounded-lg" />)}
+      </div>
+      {[1,2,3,4,5,6,7,8].map(i => (
+        <div key={i} className="flex items-center gap-4 px-4 py-3 border-b border-border/30">
+          <div className="h-3 w-24 skeleton rounded-lg" />
+          <div className="h-3 w-32 skeleton rounded-lg" />
+          <div className="h-5 w-12 skeleton rounded-full" />
+          <div className="h-3 w-28 skeleton rounded-lg hidden md:block" />
+          <div className="h-3 w-40 skeleton rounded-lg hidden lg:block" />
+          <div className="h-3 w-20 skeleton rounded-lg" />
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <>

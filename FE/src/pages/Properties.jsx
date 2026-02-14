@@ -6,7 +6,6 @@ import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import PropertyCard from '../components/PropertyCard';
 import LocationAutocomplete from '../components/LocationAutocomplete';
-import Spinner from '../components/Spinner';
 import PropertyCardSkeleton from '../components/PropertyCardSkeleton';
 
 const TYPES = ['All', 'House', 'Apartment', 'Villa', 'Commercial', 'Land'];

@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { X, ImagePlus, ArrowLeft, Save, Sparkles, Loader2 } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
-import Spinner from '../components/Spinner';
 
 const TYPES = ['House', 'Apartment', 'Villa', 'Commercial', 'Land'];
 const PURPOSES = ['Sale', 'Rent'];
@@ -135,7 +134,21 @@ export default function EditProperty() {
     }
   };
 
-  if (loading) return <Spinner className="min-h-screen pt-24" />;
+  if (loading) return (
+    <div className="min-h-screen pt-24 pb-16 mesh-gradient">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6">
+        <div className="space-y-3 mb-8">
+          <div className="h-4 w-24 skeleton rounded-lg" />
+          <div className="h-8 w-48 skeleton rounded-lg" />
+        </div>
+        <div className="bg-white rounded-2xl border border-border/50 p-8 space-y-6">
+          {[1,2,3,4].map(i => <div key={i} className="h-12 skeleton rounded-xl" />)}
+          <div className="h-32 skeleton rounded-xl" />
+          <div className="h-12 w-40 skeleton rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen pt-24 pb-16 mesh-gradient">

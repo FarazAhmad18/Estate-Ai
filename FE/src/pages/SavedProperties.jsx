@@ -4,7 +4,6 @@ import { Heart, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
 import PropertyCard from '../components/PropertyCard';
-import Spinner from '../components/Spinner';
 import PropertyCardSkeleton from '../components/PropertyCardSkeleton';
 
 export default function SavedProperties() {

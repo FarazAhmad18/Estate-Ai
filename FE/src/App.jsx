@@ -125,7 +125,7 @@ function AppContent() {
           </Routes>
         </main>
         {!isAuthPage && !isAdminPage && !isMessagesPage && <Footer />}
-        {!isAuthPage && !isAdminPage && <ChatBubble />}
+        {!isAuthPage && !isAdminPage && !isMessagesPage && <ChatBubble />}
       </div>
     </>
   );

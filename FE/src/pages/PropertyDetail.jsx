@@ -7,7 +7,6 @@ import {
 import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
-import Spinner from '../components/Spinner';
 import PropertyCard from '../components/PropertyCard';
 
 export default function PropertyDetail() {

@@ -7,7 +7,6 @@ import {
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
-import Spinner from '../components/Spinner';
 import PropertyCard from '../components/PropertyCard';
 
 export default function AgentProfile() {
@@ -167,7 +166,29 @@ export default function AgentProfile() {
     return new Date(dateStr).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
-  if (loading) return <Spinner className="min-h-screen pt-24" />;
+  if (loading) return (
+    <div className="min-h-screen pt-24 pb-16 mesh-gradient">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-10 h-10 rounded-full skeleton" />
+          <div className="h-4 w-32 skeleton rounded-lg" />
+        </div>
+        <div className="bg-white rounded-2xl border border-border/50 p-8">
+          <div className="flex items-center gap-6">
+            <div className="w-24 h-24 rounded-full skeleton" />
+            <div className="space-y-3 flex-1">
+              <div className="h-6 w-48 skeleton rounded-lg" />
+              <div className="h-4 w-32 skeleton rounded-lg" />
+              <div className="flex gap-3"><div className="h-8 w-20 skeleton rounded-lg" /><div className="h-8 w-20 skeleton rounded-lg" /></div>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+          {[1,2,3].map(i => <div key={i} className="h-72 skeleton rounded-2xl" />)}
+        </div>
+      </div>
+    </div>
+  );
   if (!agent) return (
     <div className="min-h-screen pt-24 flex items-center justify-center">
       <p className="text-muted">Agent not found</p>
@@ -287,7 +308,18 @@ export default function AgentProfile() {
         {tab === 'listings' && (
           <>
             {propLoading ? (
-              <Spinner className="py-32" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {[1,2,3].map(i => (
+                  <div key={i} className="bg-white rounded-2xl border border-border/40 overflow-hidden">
+                    <div className="h-44 skeleton" />
+                    <div className="p-4 space-y-3">
+                      <div className="h-4 w-20 skeleton rounded-full" />
+                      <div className="h-5 w-32 skeleton rounded-lg" />
+                      <div className="h-3 w-40 skeleton rounded-lg" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : properties.length === 0 ? (
               <div className="text-center py-32 bg-white rounded-2xl border border-border/50">
                 <div className="w-16 h-16 rounded-2xl bg-surface flex items-center justify-center mx-auto mb-5">
@@ -376,7 +408,20 @@ export default function AgentProfile() {
             )}
 
             {reviewLoading ? (
-              <Spinner className="py-32" />
+              <div className="space-y-4">
+                {[1,2,3].map(i => (
+                  <div key={i} className="bg-white rounded-2xl border border-border/40 p-5 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full skeleton" />
+                      <div className="space-y-2 flex-1">
+                        <div className="h-4 w-28 skeleton rounded-lg" />
+                        <div className="h-3 w-20 skeleton rounded-lg" />
+                      </div>
+                    </div>
+                    <div className="h-12 skeleton rounded-lg" />
+                  </div>
+                ))}
+              </div>
             ) : reviews.length === 0 ? (
               <div className="text-center py-32 bg-white rounded-2xl border border-border/50">
                 <div className="w-16 h-16 rounded-2xl bg-surface flex items-center justify-center mx-auto mb-5">
