@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ArrowRight, Building2, Shield, Sparkles, MapPin, Star, Quote, Trash2 } from 'lucide-react';
+import { Search, ArrowRight, Building2, Shield, Sparkles, MapPin, Star, Quote, Trash2, TrendingUp, Users, Home as HomeIcon, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -115,26 +115,31 @@ export default function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative min-h-screen pt-16 flex items-center bg-white overflow-x-clip z-10">
-        <div className="max-w-7xl mx-auto px-6 w-full">
+      <section className="relative min-h-screen pt-16 flex items-center overflow-hidden">
+        {/* Background mesh gradient */}
+        <div className="absolute inset-0 mesh-gradient" />
+        <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-accent/[0.04] rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-500/[0.03] rounded-full blur-[100px]" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left */}
-            <div className="pt-12 lg:pt-0">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface rounded-full text-xs font-medium text-muted mb-6">
-                <Sparkles size={12} className="text-accent" />
+            <div className="pt-12 lg:pt-0 animate-fade-in-up">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/[0.08] rounded-full text-xs font-semibold text-accent mb-6 border border-accent/10">
+                <Sparkles size={12} />
                 AI-Powered Real Estate Platform
               </div>
-              <h1 className="text-5xl md:text-6xl lg:text-[4.25rem] font-semibold tracking-tight text-primary leading-[1.08]">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-bold tracking-tight text-primary leading-[1.08]">
                 Find your next
                 <br />
-                <span className="text-muted">perfect place.</span>
+                <span className="gradient-text">perfect place.</span>
               </h1>
-              <p className="mt-6 text-lg text-muted max-w-md leading-relaxed">
+              <p className="mt-6 text-base sm:text-lg text-muted max-w-md leading-relaxed">
                 Discover properties across Pakistan with intelligent search, verified listings, and a seamless experience.
               </p>
 
               <form onSubmit={handleSearch} className="mt-8 max-w-md">
-                <div className="flex items-center bg-surface rounded-full p-1.5 border border-border/50 shadow-sm">
+                <div className="flex items-center bg-white rounded-full p-1.5 border border-border/60 shadow-lg shadow-black/[0.04]">
                   <div className="flex items-center gap-2 flex-1 px-4">
                     <MapPin size={16} className="text-muted flex-shrink-0" />
                     <LocationAutocomplete
@@ -153,7 +158,7 @@ export default function Home() {
                   </div>
                   <button
                     type="submit"
-                    className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-primary/90 transition-all flex items-center gap-2 flex-shrink-0"
+                    className="text-white px-6 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center gap-2 flex-shrink-0 btn-primary"
                   >
                     <Search size={14} />
                     Search
@@ -161,13 +166,13 @@ export default function Home() {
                 </div>
               </form>
 
-              <div className="mt-6 flex items-center gap-5 text-sm text-muted">
-                <span>Popular:</span>
+              <div className="mt-5 flex items-center gap-4 text-sm text-muted">
+                <span className="font-medium">Popular:</span>
                 {['Lahore', 'Islamabad', 'Karachi'].map((city) => (
                   <Link
                     key={city}
                     to={`/properties?location=${city}`}
-                    className="hover:text-accent transition-colors underline underline-offset-2 decoration-border"
+                    className="hover:text-accent transition-colors px-3 py-1 rounded-full bg-surface hover:bg-accent/5 border border-transparent hover:border-accent/20 text-xs font-medium"
                   >
                     {city}
                   </Link>
@@ -175,22 +180,23 @@ export default function Home() {
               </div>
 
               {/* Trust bar */}
-              <div className="mt-10 flex items-center gap-6">
-                <div className="flex -space-x-2">
+              <div className="mt-10 flex items-center gap-6 animate-fade-in-up stagger-2">
+                <div className="flex -space-x-2.5">
                   {[avatar1, avatar2, avatar3, avatar4].map((av, i) => (
                     <img
                       key={i}
                       src={av}
                       alt=""
-                      className="w-9 h-9 rounded-full border-2 border-white object-cover"
+                      className="w-10 h-10 rounded-full border-[2.5px] border-white object-cover shadow-sm"
                     />
                   ))}
                 </div>
                 <div>
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={12} className="fill-warning text-warning" />
+                      <Star key={i} size={13} className="fill-warning text-warning" />
                     ))}
+                    <span className="text-sm font-bold text-primary ml-1">4.9</span>
                   </div>
                   <p className="text-xs text-muted mt-0.5">Trusted by 1,000+ happy clients</p>
                 </div>
@@ -198,35 +204,48 @@ export default function Home() {
             </div>
 
             {/* Right - Image collage */}
-            <div className="relative hidden lg:block">
+            <div className="relative hidden lg:block animate-fade-in stagger-3">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-4 pt-8">
-                  <div className="rounded-3xl overflow-hidden shadow-2xl shadow-black/10">
+                  <div className="rounded-2xl overflow-hidden shadow-2xl shadow-black/10 ring-1 ring-black/5">
                     <img src={heroInterior} alt="Modern interior" className="w-full h-72 object-cover" />
                   </div>
-                  <div className="rounded-3xl overflow-hidden shadow-lg shadow-black/5">
+                  <div className="rounded-2xl overflow-hidden shadow-lg shadow-black/5 ring-1 ring-black/5">
                     <img src={room1} alt="Living room" className="w-full h-48 object-cover" />
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <div className="rounded-3xl overflow-hidden shadow-lg shadow-black/5">
+                  <div className="rounded-2xl overflow-hidden shadow-lg shadow-black/5 ring-1 ring-black/5">
                     <img src={heroExterior} alt="House exterior" className="w-full h-48 object-cover" />
                   </div>
-                  <div className="rounded-3xl overflow-hidden shadow-2xl shadow-black/10">
+                  <div className="rounded-2xl overflow-hidden shadow-2xl shadow-black/10 ring-1 ring-black/5">
                     <img src={room2} alt="Luxury room" className="w-full h-72 object-cover" />
                   </div>
                 </div>
               </div>
 
               {/* Floating card */}
-              <div className="absolute -left-6 bottom-24 bg-white rounded-2xl shadow-xl shadow-black/10 p-4 border border-border/30">
+              <div className="absolute -left-6 bottom-24 bg-white rounded-2xl shadow-xl shadow-black/8 p-4 border border-border/50 animate-float">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
                     <Building2 size={16} className="text-success" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-primary">500+</p>
+                    <p className="text-sm font-bold text-primary">500+</p>
                     <p className="text-[11px] text-muted">Properties Listed</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Second floating card */}
+              <div className="absolute -right-3 top-12 bg-white rounded-2xl shadow-xl shadow-black/8 p-4 border border-border/50 animate-float" style={{ animationDelay: '1.5s' }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <TrendingUp size={16} className="text-accent" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-primary">98%</p>
+                    <p className="text-[11px] text-muted">Satisfaction Rate</p>
                   </div>
                 </div>
               </div>
@@ -236,37 +255,54 @@ export default function Home() {
       </section>
 
       {/* Showcase Gallery */}
-      <section className="py-24 bg-surface overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 mb-12">
-          <h2 className="text-3xl md:text-4xl font-semibold text-primary tracking-tight">
-            Explore stunning spaces
-          </h2>
-          <p className="mt-3 text-muted max-w-lg">
-            From modern apartments to luxury villas, find a home that matches your lifestyle.
-          </p>
+      <section className="py-20 sm:py-24 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-10">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-accent mb-2">Gallery</p>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight">
+                Explore stunning spaces
+              </h2>
+              <p className="mt-2 text-muted text-sm sm:text-base max-w-lg">
+                From modern apartments to luxury villas, find a home that matches your lifestyle.
+              </p>
+            </div>
+            <Link
+              to="/properties"
+              className="hidden sm:inline-flex items-center gap-2 text-sm font-semibold text-accent hover:underline underline-offset-4"
+            >
+              View all <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
-        <div className="flex gap-4 px-6 overflow-x-auto pb-4 scrollbar-hide">
+        <div className="flex gap-4 px-4 sm:px-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
           {[
-            { img: room3, label: 'Luxury Living' },
-            { img: room4, label: 'Modern Design' },
-            { img: room5, label: 'Cozy Spaces' },
-            { img: room6, label: 'Contemporary' },
-            { img: room1, label: 'Elegant Decor' },
-            { img: room2, label: 'Premium Finish' },
+            { img: room3, label: 'Luxury Living', tag: 'Featured' },
+            { img: room4, label: 'Modern Design', tag: 'Popular' },
+            { img: room5, label: 'Cozy Spaces', tag: 'New' },
+            { img: room6, label: 'Contemporary', tag: 'Trending' },
+            { img: room1, label: 'Elegant Decor', tag: 'Premium' },
+            { img: room2, label: 'Premium Finish', tag: 'Exclusive' },
           ].map((item, i) => (
             <Link
               to="/properties"
               key={i}
-              className="flex-shrink-0 group relative w-72 h-80 rounded-3xl overflow-hidden"
+              className="flex-shrink-0 group relative w-64 sm:w-72 h-80 rounded-2xl overflow-hidden snap-start"
             >
               <img
                 src={item.img}
                 alt={item.label}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+              <div className="absolute top-4 left-4">
+                <span className="text-[10px] font-semibold uppercase tracking-wider bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full">
+                  {item.tag}
+                </span>
+              </div>
               <div className="absolute bottom-5 left-5 right-5">
-                <p className="text-white font-medium text-sm">{item.label}</p>
+                <p className="text-white font-semibold text-sm">{item.label}</p>
+                <p className="text-white/60 text-xs mt-0.5">Explore collection</p>
               </div>
             </Link>
           ))}
@@ -274,18 +310,21 @@ export default function Home() {
       </section>
 
       {/* Stats */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+      <section className="py-20 mesh-gradient">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             {[
-              { value: '500+', label: 'Properties Listed', color: 'bg-accent/10 text-accent' },
-              { value: '200+', label: 'Verified Agents', color: 'bg-success/10 text-success' },
-              { value: '50+', label: 'Cities Covered', color: 'bg-warning/10 text-warning' },
-              { value: '1000+', label: 'Happy Clients', color: 'bg-purple-100 text-purple-600' },
+              { value: '500+', label: 'Properties Listed', icon: Building2, gradient: 'from-blue-500 to-blue-600' },
+              { value: '200+', label: 'Verified Agents', icon: Users, gradient: 'from-emerald-500 to-emerald-600' },
+              { value: '50+', label: 'Cities Covered', icon: HomeIcon, gradient: 'from-amber-500 to-orange-500' },
+              { value: '1000+', label: 'Happy Clients', icon: CheckCircle, gradient: 'from-purple-500 to-violet-600' },
             ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-4xl md:text-5xl font-semibold text-primary tracking-tight">{stat.value}</p>
-                <p className="mt-2 text-sm text-muted">{stat.label}</p>
+              <div key={stat.label} className="bg-white rounded-2xl p-6 sm:p-8 border border-border/50 text-center hover:shadow-lg hover:shadow-black/[0.04] hover:-translate-y-0.5 transition-all duration-300">
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center mx-auto mb-4 shadow-lg shadow-black/10`}>
+                  <stat.icon size={20} className="text-white" />
+                </div>
+                <p className="text-3xl sm:text-4xl font-bold text-primary tracking-tight">{stat.value}</p>
+                <p className="mt-1.5 text-xs sm:text-sm text-muted">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -294,21 +333,21 @@ export default function Home() {
 
       {/* Featured Properties */}
       {featured.length > 0 && (
-        <section className="py-24 bg-surface">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex items-end justify-between mb-12">
+        <section className="py-20 sm:py-24 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 sm:mb-12 gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-accent mb-3">Latest Listings</p>
-                <h2 className="text-3xl md:text-4xl font-semibold text-primary tracking-tight">
+                <p className="text-xs font-semibold uppercase tracking-wider text-accent mb-2">Latest Listings</p>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight">
                   Featured Properties
                 </h2>
-                <p className="mt-3 text-muted">
+                <p className="mt-2 text-muted text-sm sm:text-base">
                   Explore our newest listings across Pakistan.
                 </p>
               </div>
               <Link
                 to="/properties"
-                className="hidden md:flex items-center gap-2 text-sm font-medium bg-white px-5 py-2.5 rounded-full border border-border/50 text-secondary hover:border-accent hover:text-accent transition-colors"
+                className="hidden sm:flex items-center gap-2 text-sm font-semibold bg-white px-5 py-2.5 rounded-full border border-border/60 text-secondary hover:border-accent hover:text-accent transition-all hover:shadow-md hover:shadow-accent/10"
               >
                 View all <ArrowRight size={14} />
               </Link>
@@ -325,10 +364,10 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="mt-10 text-center md:hidden">
+            <div className="mt-10 text-center sm:hidden">
               <Link
                 to="/properties"
-                className="inline-flex items-center gap-2 text-sm font-medium text-accent"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-accent"
               >
                 View all properties <ArrowRight size={14} />
               </Link>
@@ -338,42 +377,47 @@ export default function Home() {
       )}
 
       {/* Features */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <section className="py-20 sm:py-24 mesh-gradient">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-accent mb-3">Why EstateAI</p>
-              <h2 className="text-3xl md:text-4xl font-semibold text-primary tracking-tight">
-                A smarter way to find home.
+              <p className="text-xs font-semibold uppercase tracking-wider text-accent mb-2">Why EstateAI</p>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight">
+                A smarter way to
+                <br />
+                <span className="gradient-text">find home.</span>
               </h2>
-              <p className="mt-4 text-muted leading-relaxed max-w-md">
+              <p className="mt-4 text-muted leading-relaxed max-w-md text-sm sm:text-base">
                 We combine technology with real estate expertise to deliver an experience that is fast, reliable, and tailored to you.
               </p>
 
-              <div className="mt-10 space-y-6">
+              <div className="mt-10 space-y-5">
                 {[
                   {
                     icon: Sparkles,
                     title: 'AI-Powered Insights',
                     desc: 'Get intelligent property analysis, market trends, and personalized recommendations.',
+                    gradient: 'from-blue-500 to-blue-600',
                   },
                   {
                     icon: Shield,
                     title: 'Verified Listings',
                     desc: 'Every property and agent is verified to ensure accurate, trustworthy information.',
+                    gradient: 'from-emerald-500 to-emerald-600',
                   },
                   {
                     icon: Building2,
                     title: 'Seamless Experience',
                     desc: 'From search to close, enjoy a streamlined process designed for modern users.',
+                    gradient: 'from-purple-500 to-violet-600',
                   },
                 ].map((feature) => (
-                  <div key={feature.title} className="flex gap-4">
-                    <div className="w-11 h-11 rounded-xl bg-surface flex items-center justify-center flex-shrink-0">
-                      <feature.icon size={18} className="text-accent" />
+                  <div key={feature.title} className="flex gap-4 p-4 rounded-2xl hover:bg-white hover:shadow-sm transition-all duration-200 group">
+                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center flex-shrink-0 shadow-sm`}>
+                      <feature.icon size={18} className="text-white" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-primary">{feature.title}</h3>
+                      <h3 className="font-semibold text-primary group-hover:text-accent transition-colors">{feature.title}</h3>
                       <p className="mt-1 text-sm text-muted leading-relaxed">{feature.desc}</p>
                     </div>
                   </div>
@@ -383,21 +427,24 @@ export default function Home() {
 
             {/* Feature image */}
             <div className="relative hidden lg:block">
-              <div className="rounded-3xl overflow-hidden shadow-2xl shadow-black/10">
+              <div className="rounded-2xl overflow-hidden shadow-2xl shadow-black/10 ring-1 ring-black/5">
                 <img src={heroInterior} alt="Modern interior" className="w-full h-[520px] object-cover" />
               </div>
-              <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl shadow-black/10 p-5 border border-border/30 max-w-[220px]">
+              <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl shadow-black/8 p-5 border border-border/40 max-w-[240px]">
                 <div className="flex items-center gap-1 mb-2">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={11} className="fill-warning text-warning" />
+                    <Star key={i} size={12} className="fill-warning text-warning" />
                   ))}
                 </div>
                 <p className="text-xs text-secondary leading-relaxed">
                   "Found my dream home in just 2 weeks. The AI recommendations were spot on."
                 </p>
                 <div className="flex items-center gap-2 mt-3">
-                  <img src={avatar3} alt="" className="w-6 h-6 rounded-full object-cover" />
-                  <span className="text-[11px] font-medium text-muted">Ahmed R.</span>
+                  <img src={avatar3} alt="" className="w-7 h-7 rounded-full object-cover ring-2 ring-white" />
+                  <div>
+                    <span className="text-[11px] font-semibold text-primary">Ahmed R.</span>
+                    <span className="text-[10px] text-muted block">Verified Buyer</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -406,49 +453,52 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 bg-surface">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <p className="text-xs font-semibold uppercase tracking-wider text-accent mb-3">Testimonials</p>
-            <h2 className="text-3xl md:text-4xl font-semibold text-primary tracking-tight">
+      <section className="py-20 sm:py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12 sm:mb-14">
+            <p className="text-xs font-semibold uppercase tracking-wider text-accent mb-2">Testimonials</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight">
               What our clients say
             </h2>
+            <p className="mt-3 text-muted max-w-md mx-auto text-sm sm:text-base">
+              Real stories from real people who found their dream properties with EstateAI.
+            </p>
           </div>
 
           {testimonials.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {testimonials.map((t) => (
                 <div
                   key={t.id}
-                  className="bg-white rounded-2xl p-7 border border-border/50 flex flex-col"
+                  className="bg-white rounded-2xl p-6 sm:p-7 border border-border/50 flex flex-col hover:shadow-lg hover:shadow-black/[0.04] hover:-translate-y-0.5 transition-all duration-300"
                 >
-                  <Quote size={20} className="text-accent/20 mb-4" />
-                  <div className="flex items-center gap-0.5 mb-3">
+                  <div className="flex items-center gap-0.5 mb-4">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        size={13}
+                        size={14}
                         className={i < t.rating ? 'fill-warning text-warning' : 'text-border'}
                       />
                     ))}
                   </div>
+                  <Quote size={24} className="text-accent/10 mb-3" />
                   <p className="text-sm text-secondary leading-relaxed flex-1">{t.content}</p>
-                  <div className="flex items-center gap-3 mt-6 pt-5 border-t border-border/50">
+                  <div className="flex items-center gap-3 mt-6 pt-5 border-t border-border/40">
                     {t.User?.avatar_url ? (
-                      <img src={t.User.avatar_url} alt={t.User.name} className="w-10 h-10 rounded-full object-cover" />
+                      <img src={t.User.avatar_url} alt={t.User.name} className="w-10 h-10 rounded-full object-cover ring-2 ring-surface" />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-sm font-semibold text-accent">
+                      <div className="w-10 h-10 rounded-full gradient-accent flex items-center justify-center text-sm font-bold text-white">
                         {t.User?.name?.charAt(0)?.toUpperCase() || '?'}
                       </div>
                     )}
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-primary">{t.User?.name}</p>
-                      <p className="text-xs text-muted">{t.User?.role}</p>
+                      <p className="text-sm font-semibold text-primary">{t.User?.name}</p>
+                      <p className="text-xs text-muted capitalize">{t.User?.role}</p>
                     </div>
                     {user && t.User?.id === user.id && (
                       <button
                         onClick={() => handleDeleteReview(t.id)}
-                        className="text-muted hover:text-red-500 transition-colors"
+                        className="text-muted hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50"
                         title="Delete your review"
                       >
                         <Trash2 size={15} />
@@ -459,7 +509,10 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <p className="text-center text-muted">No reviews yet. Be the first to share your experience!</p>
+            <div className="text-center py-16 bg-surface rounded-2xl border border-border/50">
+              <Quote size={32} className="mx-auto text-muted/30 mb-3" />
+              <p className="text-muted">No reviews yet. Be the first to share your experience!</p>
+            </div>
           )}
 
           {/* Review form / CTA */}
@@ -468,19 +521,19 @@ export default function Home() {
               userTestimonial ? (
                 <p className="text-sm text-muted">You have already submitted a review.</p>
               ) : showReviewForm ? (
-                <form onSubmit={handleSubmitReview} className="max-w-lg mx-auto bg-white rounded-2xl p-6 border border-border/50 text-left">
-                  <p className="text-sm font-medium text-primary mb-3">Write a Review</p>
+                <form onSubmit={handleSubmitReview} className="max-w-lg mx-auto bg-white rounded-2xl p-6 border border-border/50 text-left shadow-lg shadow-black/[0.04]">
+                  <p className="text-sm font-semibold text-primary mb-3">Write a Review</p>
                   <div className="flex items-center gap-1 mb-4">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
                         key={star}
                         type="button"
                         onClick={() => setReviewRating(star)}
-                        className="focus:outline-none"
+                        className="focus:outline-none p-0.5"
                       >
                         <Star
-                          size={22}
-                          className={star <= reviewRating ? 'fill-warning text-warning' : 'text-border hover:text-warning/50'}
+                          size={24}
+                          className={star <= reviewRating ? 'fill-warning text-warning' : 'text-border hover:text-warning/50 transition-colors'}
                         />
                       </button>
                     ))}
@@ -490,13 +543,13 @@ export default function Home() {
                     onChange={(e) => setReviewContent(e.target.value)}
                     placeholder="Share your experience..."
                     rows={4}
-                    className="w-full border border-border rounded-xl px-4 py-3 text-sm text-secondary placeholder:text-muted focus:outline-none focus:border-accent resize-none"
+                    className="w-full border border-border/60 rounded-xl px-4 py-3 text-sm text-secondary placeholder:text-muted focus:border-accent resize-none transition-colors"
                   />
                   <div className="flex items-center gap-3 mt-4">
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                      className="text-white px-6 py-2.5 rounded-full text-sm font-semibold btn-primary disabled:opacity-50"
                     >
                       {submitting ? 'Submitting...' : 'Submit'}
                     </button>
@@ -512,13 +565,13 @@ export default function Home() {
               ) : (
                 <button
                   onClick={() => setShowReviewForm(true)}
-                  className="inline-flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
+                  className="inline-flex items-center gap-2 text-white px-6 py-3 rounded-full text-sm font-semibold btn-primary"
                 >
                   Write a Review
                 </button>
               )
             ) : (
-              <Link to="/login" className="text-sm text-accent hover:underline">
+              <Link to="/login" className="text-sm text-accent font-medium hover:underline underline-offset-4">
                 Sign in to leave a review
               </Link>
             )}
@@ -527,29 +580,37 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="relative bg-primary rounded-3xl overflow-hidden">
+      <section className="py-20 sm:py-24 bg-surface">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="relative gradient-hero rounded-3xl overflow-hidden">
+            {/* Decorative elements */}
             <div className="absolute inset-0 opacity-10">
               <img src={room2} alt="" className="w-full h-full object-cover" />
             </div>
-            <div className="relative px-8 py-20 md:px-16 text-center">
-              <h2 className="text-3xl md:text-5xl font-semibold text-white tracking-tight">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-accent/20 rounded-full blur-[100px]" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px]" />
+
+            <div className="relative px-6 py-16 sm:px-12 sm:py-20 md:px-16 text-center">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-xs font-semibold text-white/70 mb-6 border border-white/10">
+                <Sparkles size={12} />
+                Join EstateAI Today
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white tracking-tight">
                 Ready to find your place?
               </h2>
-              <p className="mt-5 text-white/50 max-w-md mx-auto text-lg">
+              <p className="mt-4 sm:mt-5 text-white/40 max-w-md mx-auto text-sm sm:text-lg">
                 Join thousands of buyers and agents already using EstateAI.
               </p>
-              <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   to="/properties"
-                  className="bg-white text-primary px-8 py-3.5 rounded-full text-sm font-medium hover:bg-white/90 transition-colors"
+                  className="bg-white text-primary px-8 py-3.5 rounded-full text-sm font-semibold hover:bg-white/90 transition-all shadow-lg shadow-black/10 hover:shadow-xl"
                 >
                   Browse Properties
                 </Link>
                 <Link
                   to="/register"
-                  className="text-white/70 hover:text-white text-sm font-medium transition-colors flex items-center gap-2"
+                  className="text-white/60 hover:text-white text-sm font-medium transition-colors flex items-center gap-2"
                 >
                   Create an Account <ArrowRight size={14} />
                 </Link>
