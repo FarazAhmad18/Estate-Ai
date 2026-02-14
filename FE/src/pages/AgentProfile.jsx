@@ -18,21 +18,18 @@ export default function AgentProfile() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('listings');
 
-  // Listings state
   const [properties, setProperties] = useState([]);
   const [propPage, setPropPage] = useState(1);
   const [propTotalPages, setPropTotalPages] = useState(1);
   const [propLoading, setPropLoading] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState([]);
 
-  // Reviews state
   const [reviews, setReviews] = useState([]);
   const [reviewPage, setReviewPage] = useState(1);
   const [reviewTotalPages, setReviewTotalPages] = useState(1);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
 
-  // Review form
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewContent, setReviewContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -111,7 +108,6 @@ export default function AgentProfile() {
       setHasReviewed(true);
       setReviewContent('');
       setReviewRating(5);
-      // Refresh stats
       const statsRes = await api.get(`/agents/${id}`);
       setStats(statsRes.data.stats);
       toast.success('Review submitted');
@@ -148,24 +144,25 @@ export default function AgentProfile() {
   );
 
   const canReview = user && user.role === 'Buyer' && user.id !== parseInt(id) && !hasReviewed;
+  const userInitial = agent.name?.charAt(0)?.toUpperCase() || '?';
 
   return (
-    <div className="min-h-screen pt-20 pb-16">
-      <div className="max-w-6xl mx-auto px-6">
+    <div className="min-h-screen pt-20 pb-16 mesh-gradient">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Agent Header */}
-        <div className="bg-white rounded-2xl border border-border/50 p-8 mt-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            <div className="w-20 h-20 rounded-full bg-surface flex items-center justify-center overflow-hidden flex-shrink-0">
+        <div className="bg-white rounded-2xl border border-border/50 p-6 sm:p-8 mt-6 animate-fade-in-up">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6">
+            <div className="w-20 h-20 rounded-full gradient-accent flex items-center justify-center overflow-hidden flex-shrink-0 ring-4 ring-white shadow-lg">
               {agent.avatar_url ? (
                 <img src={agent.avatar_url} alt={agent.name} className="w-full h-full object-cover" />
               ) : (
-                <User size={32} className="text-muted" />
+                <span className="text-2xl font-bold text-white">{userInitial}</span>
               )}
             </div>
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-2xl font-semibold text-primary">{agent.name}</h1>
-                <span className="text-xs font-medium bg-accent/10 text-accent px-3 py-1 rounded-full">Agent</span>
+              <div className="flex items-center gap-3 mb-1 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-bold text-primary tracking-tight">{agent.name}</h1>
+                <span className="text-[10px] font-semibold uppercase tracking-wider bg-accent/90 text-white px-2.5 py-0.5 rounded-full">Agent</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted mt-1">
                 <CalendarDays size={14} />
@@ -184,11 +181,11 @@ export default function AgentProfile() {
                 )}
               </div>
             </div>
-            <div className="flex gap-3 flex-shrink-0">
+            <div className="flex gap-3 flex-shrink-0 w-full sm:w-auto">
               {agent.email && (
                 <a
                   href={`mailto:${agent.email}`}
-                  className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
+                  className="flex-1 sm:flex-none text-center text-white px-6 py-2.5 rounded-full text-sm font-semibold btn-primary"
                 >
                   Contact
                 </a>
@@ -196,7 +193,7 @@ export default function AgentProfile() {
               {agent.phone && (
                 <a
                   href={`tel:${agent.phone}`}
-                  className="bg-white text-primary px-5 py-2.5 rounded-full text-sm font-medium border border-border/50 hover:bg-surface transition-colors"
+                  className="flex-1 sm:flex-none text-center bg-white text-primary px-6 py-2.5 rounded-full text-sm font-semibold border border-border/50 hover:bg-surface transition-colors"
                 >
                   Call
                 </a>
@@ -205,45 +202,31 @@ export default function AgentProfile() {
           </div>
         </div>
 
-        {/* Stats Bar */}
+        {/* Stats */}
         {stats && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
-            <div className="bg-white rounded-2xl border border-border/50 p-5">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-                <Building2 size={18} className="text-primary" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 animate-fade-in-up stagger-1">
+            {[
+              { label: 'Total Listings', value: stats.totalListings, icon: Building2, gradient: 'from-blue-500 to-blue-600' },
+              { label: 'Avg Rating', value: stats.avgRating || '—', suffix: `(${stats.totalReviews})`, icon: Star, gradient: 'from-amber-500 to-orange-500' },
+              { label: 'Sold', value: stats.sold, icon: CheckCircle2, gradient: 'from-red-500 to-red-600' },
+              { label: 'Rented', value: stats.rented, icon: TrendingUp, gradient: 'from-blue-500 to-indigo-600' },
+            ].map((s) => (
+              <div key={s.label} className="bg-white rounded-2xl border border-border/50 p-5 hover:shadow-md hover:shadow-black/[0.03] transition-all duration-200">
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.gradient} flex items-center justify-center mb-3 shadow-sm`}>
+                  <s.icon size={18} className="text-white" />
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <p className="text-2xl font-bold text-primary">{s.value}</p>
+                  {s.suffix && <p className="text-xs text-muted">{s.suffix}</p>}
+                </div>
+                <p className="text-xs text-muted mt-0.5">{s.label}</p>
               </div>
-              <p className="text-2xl font-semibold text-primary">{stats.totalListings}</p>
-              <p className="text-xs text-muted mt-0.5">Total Listings</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-border/50 p-5">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mb-3">
-                <Star size={18} className="text-amber-500" />
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <p className="text-2xl font-semibold text-primary">{stats.avgRating || '—'}</p>
-                <p className="text-xs text-muted">({stats.totalReviews})</p>
-              </div>
-              <p className="text-xs text-muted mt-0.5">Avg Rating</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-border/50 p-5">
-              <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center mb-3">
-                <CheckCircle2 size={18} className="text-red-500" />
-              </div>
-              <p className="text-2xl font-semibold text-primary">{stats.sold}</p>
-              <p className="text-xs text-muted mt-0.5">Sold</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-border/50 p-5">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mb-3">
-                <TrendingUp size={18} className="text-blue-500" />
-              </div>
-              <p className="text-2xl font-semibold text-primary">{stats.rented}</p>
-              <p className="text-xs text-muted mt-0.5">Rented</p>
-            </div>
+            ))}
           </div>
         )}
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-surface rounded-xl p-1 mt-8 mb-8 w-fit">
+        <div className="flex gap-1 bg-white rounded-xl p-1 mt-8 mb-8 w-fit border border-border/50 shadow-sm animate-fade-in-up stagger-2">
           {[
             { key: 'listings', label: 'Listings' },
             { key: 'reviews', label: `Reviews${stats ? ` (${stats.totalReviews})` : ''}` },
@@ -251,8 +234,8 @@ export default function AgentProfile() {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === t.key ? 'bg-white text-primary shadow-sm' : 'text-muted hover:text-secondary'
+              className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                tab === t.key ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-secondary'
               }`}
             >
               {t.label}
@@ -266,9 +249,11 @@ export default function AgentProfile() {
             {propLoading ? (
               <Spinner className="py-32" />
             ) : properties.length === 0 ? (
-              <div className="text-center py-32 bg-surface rounded-2xl">
-                <Building2 size={40} className="mx-auto text-muted mb-4" />
-                <p className="text-lg font-medium text-primary">No listings yet</p>
+              <div className="text-center py-32 bg-white rounded-2xl border border-border/50">
+                <div className="w-16 h-16 rounded-2xl bg-surface flex items-center justify-center mx-auto mb-5">
+                  <Building2 size={28} className="text-muted" />
+                </div>
+                <p className="text-lg font-bold text-primary">No listings yet</p>
                 <p className="mt-2 text-sm text-muted">This agent hasn't listed any properties.</p>
               </div>
             ) : (
@@ -288,17 +273,17 @@ export default function AgentProfile() {
                     <button
                       onClick={() => setPropPage((p) => Math.max(1, p - 1))}
                       disabled={propPage === 1}
-                      className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center text-muted hover:text-primary disabled:opacity-30 transition-colors"
+                      className="w-10 h-10 rounded-full bg-white border border-border/50 flex items-center justify-center text-muted hover:text-accent disabled:opacity-30 transition-colors"
                     >
                       <ChevronLeft size={18} />
                     </button>
-                    <span className="text-sm text-muted">
+                    <span className="text-sm text-muted font-medium">
                       Page {propPage} of {propTotalPages}
                     </span>
                     <button
                       onClick={() => setPropPage((p) => Math.min(propTotalPages, p + 1))}
                       disabled={propPage === propTotalPages}
-                      className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center text-muted hover:text-primary disabled:opacity-30 transition-colors"
+                      className="w-10 h-10 rounded-full bg-white border border-border/50 flex items-center justify-center text-muted hover:text-accent disabled:opacity-30 transition-colors"
                     >
                       <ChevronRight size={18} />
                     </button>
@@ -312,10 +297,9 @@ export default function AgentProfile() {
         {/* Reviews Tab */}
         {tab === 'reviews' && (
           <>
-            {/* Review Form */}
             {canReview && (
               <div className="bg-white rounded-2xl border border-border/50 p-6 mb-6">
-                <h3 className="text-sm font-semibold text-primary mb-4">Write a Review</h3>
+                <h3 className="text-sm font-bold text-primary mb-4">Write a Review</h3>
                 <form onSubmit={handleSubmitReview}>
                   <div className="flex items-center gap-1 mb-4">
                     {[1, 2, 3, 4, 5].map((s) => (
@@ -323,11 +307,11 @@ export default function AgentProfile() {
                         key={s}
                         type="button"
                         onClick={() => setReviewRating(s)}
-                        className="p-0.5"
+                        className="p-0.5 focus:outline-none"
                       >
                         <Star
                           size={24}
-                          className={s <= reviewRating ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}
+                          className={s <= reviewRating ? 'fill-warning text-warning' : 'text-border hover:text-warning/50 transition-colors'}
                         />
                       </button>
                     ))}
@@ -338,12 +322,12 @@ export default function AgentProfile() {
                     onChange={(e) => setReviewContent(e.target.value)}
                     placeholder="Share your experience with this agent..."
                     rows={3}
-                    className="w-full px-4 py-3 bg-surface rounded-xl text-sm border border-border/50 focus:border-accent transition-colors resize-none"
+                    className="w-full px-4 py-3.5 bg-surface rounded-xl text-sm border border-border/60 focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all resize-none placeholder:text-muted"
                   />
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="mt-3 bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                    className="mt-4 text-white px-6 py-2.5 rounded-xl text-sm font-semibold btn-primary disabled:opacity-50"
                   >
                     {submitting ? 'Submitting...' : 'Submit Review'}
                   </button>
@@ -354,27 +338,29 @@ export default function AgentProfile() {
             {reviewLoading ? (
               <Spinner className="py-32" />
             ) : reviews.length === 0 ? (
-              <div className="text-center py-32 bg-surface rounded-2xl">
-                <Star size={40} className="mx-auto text-muted mb-4" />
-                <p className="text-lg font-medium text-primary">No reviews yet</p>
+              <div className="text-center py-32 bg-white rounded-2xl border border-border/50">
+                <div className="w-16 h-16 rounded-2xl bg-surface flex items-center justify-center mx-auto mb-5">
+                  <Star size={28} className="text-muted" />
+                </div>
+                <p className="text-lg font-bold text-primary">No reviews yet</p>
                 <p className="mt-2 text-sm text-muted">Be the first to review this agent.</p>
               </div>
             ) : (
               <>
                 <div className="space-y-4">
                   {reviews.map((review) => (
-                    <div key={review.id} className="bg-white rounded-2xl border border-border/50 p-6">
+                    <div key={review.id} className="bg-white rounded-2xl border border-border/50 p-6 hover:shadow-md hover:shadow-black/[0.03] transition-all duration-200">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-surface flex items-center justify-center overflow-hidden">
+                          <div className="w-10 h-10 rounded-full gradient-accent flex items-center justify-center overflow-hidden">
                             {review.Reviewer?.avatar_url ? (
                               <img src={review.Reviewer.avatar_url} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <User size={16} className="text-muted" />
+                              <span className="text-xs font-bold text-white">{review.Reviewer?.name?.charAt(0)?.toUpperCase() || '?'}</span>
                             )}
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-primary">{review.Reviewer?.name || 'Anonymous'}</p>
+                            <p className="text-sm font-semibold text-primary">{review.Reviewer?.name || 'Anonymous'}</p>
                             <p className="text-xs text-muted">{formatDate(review.createdAt)}</p>
                           </div>
                         </div>
@@ -384,14 +370,14 @@ export default function AgentProfile() {
                               <Star
                                 key={s}
                                 size={14}
-                                className={s <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}
+                                className={s <= review.rating ? 'fill-warning text-warning' : 'text-border'}
                               />
                             ))}
                           </div>
                           {user && review.reviewer_id === user.id && (
                             <button
                               onClick={() => handleDeleteReview(review.id)}
-                              className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-muted hover:text-red-500 transition-colors ml-2"
+                              className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center text-muted hover:text-red-500 transition-all ml-2"
                             >
                               <Trash2 size={14} />
                             </button>
@@ -407,17 +393,17 @@ export default function AgentProfile() {
                     <button
                       onClick={() => setReviewPage((p) => Math.max(1, p - 1))}
                       disabled={reviewPage === 1}
-                      className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center text-muted hover:text-primary disabled:opacity-30 transition-colors"
+                      className="w-10 h-10 rounded-full bg-white border border-border/50 flex items-center justify-center text-muted hover:text-accent disabled:opacity-30 transition-colors"
                     >
                       <ChevronLeft size={18} />
                     </button>
-                    <span className="text-sm text-muted">
+                    <span className="text-sm text-muted font-medium">
                       Page {reviewPage} of {reviewTotalPages}
                     </span>
                     <button
                       onClick={() => setReviewPage((p) => Math.min(reviewTotalPages, p + 1))}
                       disabled={reviewPage === reviewTotalPages}
-                      className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center text-muted hover:text-primary disabled:opacity-30 transition-colors"
+                      className="w-10 h-10 rounded-full bg-white border border-border/50 flex items-center justify-center text-muted hover:text-accent disabled:opacity-30 transition-colors"
                     >
                       <ChevronRight size={18} />
                     </button>

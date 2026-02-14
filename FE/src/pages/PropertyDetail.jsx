@@ -152,48 +152,87 @@ export default function PropertyDetail() {
 
   return (
     <div className="min-h-screen pt-20 pb-16">
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Back */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-sm text-muted hover:text-primary transition-colors mb-6 mt-4"
-        >
-          <ArrowLeft size={16} /> Back
-        </button>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        {/* Breadcrumb + Back */}
+        <div className="animate-fade-in-down flex items-center gap-3 mb-6 mt-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-surface border border-border/60 text-muted hover:text-primary hover:border-accent/40 hover:bg-white transition-all"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <nav className="flex items-center gap-2 text-sm text-muted">
+            <Link to="/properties" className="hover:text-accent transition-colors">Properties</Link>
+            <ChevronRight size={14} className="text-border" />
+            <span className="text-primary font-medium truncate max-w-[200px] sm:max-w-none">
+              {property.location}
+            </span>
+          </nav>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
           {/* Left: Images + Details */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Image Gallery */}
-            <div className="relative aspect-[16/10] bg-surface rounded-2xl overflow-hidden">
+
+            {/* ── Image Gallery ── */}
+            <div className="animate-fade-in-up relative aspect-[16/10] sm:aspect-[16/9] bg-surface rounded-2xl overflow-hidden mobile-full sm:!rounded-2xl sm:!mx-0">
               {images.length > 0 ? (
                 <>
                   <img
+                    key={currentImg}
                     src={images[currentImg]?.image_url}
                     alt={property.location}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover animate-fade-in"
                   />
+
+                  {/* Image counter badge */}
+                  <div className="absolute top-4 left-4 glass-dark text-white text-xs font-medium px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                    <Building2 size={12} />
+                    {currentImg + 1} / {images.length}
+                  </div>
+
+                  {/* Favorite button on image */}
+                  <button
+                    onClick={handleToggleFavorite}
+                    className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                      isFavorited
+                        ? 'bg-red-500 text-white shadow-lg shadow-red-500/30'
+                        : 'glass text-secondary hover:text-red-500'
+                    }`}
+                  >
+                    <Heart
+                      size={18}
+                      className={isFavorited ? 'fill-white text-white' : ''}
+                    />
+                  </button>
+
                   {images.length > 1 && (
                     <>
+                      {/* Prev / Next arrows */}
                       <button
                         onClick={() => setCurrentImg((c) => (c === 0 ? images.length - 1 : c - 1))}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 glass rounded-full flex items-center justify-center hover:bg-white transition-all shadow-sm"
                       >
                         <ChevronLeft size={18} />
                       </button>
                       <button
                         onClick={() => setCurrentImg((c) => (c === images.length - 1 ? 0 : c + 1))}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 glass rounded-full flex items-center justify-center hover:bg-white transition-all shadow-sm"
                       >
                         <ChevronRight size={18} />
                       </button>
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+
+                      {/* Dot navigation */}
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 glass-dark px-3 py-2 rounded-full flex gap-2">
                         {images.map((_, i) => (
                           <button
                             key={i}
                             onClick={() => setCurrentImg(i)}
-                            className={`w-2 h-2 rounded-full transition-colors ${
-                              i === currentImg ? 'bg-white' : 'bg-white/40'
+                            className={`rounded-full transition-all duration-300 ${
+                              i === currentImg
+                                ? 'w-6 h-2 bg-white'
+                                : 'w-2 h-2 bg-white/40 hover:bg-white/70'
                             }`}
                           />
                         ))}
@@ -202,21 +241,24 @@ export default function PropertyDetail() {
                   )}
                 </>
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted">
-                  <Building2 size={48} />
+                <div className="w-full h-full flex flex-col items-center justify-center text-muted gap-2">
+                  <Building2 size={48} strokeWidth={1.5} />
+                  <span className="text-sm">No images available</span>
                 </div>
               )}
             </div>
 
             {/* Thumbnails */}
             {images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mt-2 px-1">
                 {images.map((img, i) => (
                   <button
                     key={img.id}
                     onClick={() => setCurrentImg(i)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-colors ${
-                      i === currentImg ? 'border-accent' : 'border-transparent'
+                    className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-200 ${
+                      i === currentImg
+                        ? 'border-accent ring-2 ring-accent/20 scale-105'
+                        : 'border-transparent opacity-70 hover:opacity-100'
                     }`}
                   >
                     <img src={img.image_url} alt="" className="w-full h-full object-cover" />
@@ -225,95 +267,99 @@ export default function PropertyDetail() {
               </div>
             )}
 
-            {/* Details */}
-            <div>
-              <div className="flex items-center justify-between gap-3 mb-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-medium bg-surface px-3 py-1 rounded-full text-secondary">
-                    {property.type}
-                  </span>
-                  <span className={`text-xs font-medium px-3 py-1 rounded-full ${
-                    property.purpose === 'Sale'
-                      ? 'bg-accent/10 text-accent'
-                      : 'bg-success/10 text-success'
-                  }`}>
-                    For {property.purpose}
-                  </span>
-                </div>
-                <button
-                  onClick={handleToggleFavorite}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
-                    isFavorited
-                      ? 'bg-red-50 border-red-200 text-red-600'
-                      : 'bg-surface border-border/50 text-secondary hover:border-accent'
-                  }`}
-                >
-                  <Heart
-                    size={16}
-                    className={isFavorited ? 'fill-red-500 text-red-500' : ''}
-                  />
-                  {isFavorited ? 'Saved' : 'Save Property'}
-                </button>
+            {/* ── Property Info ── */}
+            <div className="animate-fade-in-up stagger-1">
+              {/* Tags */}
+              <div className="flex items-center gap-2 mb-4 flex-wrap">
+                <span className="text-xs font-semibold bg-surface px-3 py-1.5 rounded-full text-secondary border border-border/60">
+                  {property.type}
+                </span>
+                <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${
+                  property.purpose === 'Sale'
+                    ? 'bg-accent/10 text-accent border border-accent/20'
+                    : 'bg-success/10 text-success border border-success/20'
+                }`}>
+                  For {property.purpose}
+                </span>
               </div>
 
-              <h1 className="text-2xl md:text-3xl font-semibold text-primary tracking-tight">
-                PKR {formatPrice(property.price)}
-                {property.purpose === 'Rent' && <span className="text-lg font-normal text-muted"> /month</span>}
-              </h1>
+              {/* Price */}
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-1.5 h-10 rounded-full gradient-accent flex-shrink-0 mt-1" />
+                <h1 className="text-3xl md:text-4xl font-bold text-primary tracking-tight">
+                  PKR {formatPrice(property.price)}
+                  {property.purpose === 'Rent' && (
+                    <span className="text-base md:text-lg font-normal text-muted"> /month</span>
+                  )}
+                </h1>
+              </div>
 
-              <div className="flex items-center gap-2 mt-3 text-muted">
-                <MapPin size={16} />
+              {/* Location */}
+              <div className="flex items-center gap-2 text-muted ml-4">
+                <MapPin size={16} className="text-accent flex-shrink-0" />
                 <span className="text-sm">{property.location}</span>
               </div>
             </div>
 
-            {/* Specs */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {/* ── Spec Cards ── */}
+            <div className="animate-fade-in-up stagger-2 flex gap-3 overflow-x-auto pb-2 scrollbar-hide sm:grid sm:grid-cols-4 sm:overflow-visible">
               {[
                 { icon: Building2, label: 'Type', value: property.type },
                 { icon: Tag, label: 'Purpose', value: `For ${property.purpose}` },
                 { icon: BedDouble, label: 'Bedrooms', value: property.bedrooms || 'N/A' },
                 { icon: Maximize, label: 'Area', value: `${property.area?.toLocaleString()} sq ft` },
               ].map((spec) => (
-                <div key={spec.label} className="bg-surface rounded-xl p-4">
-                  <spec.icon size={16} className="text-muted mb-2" />
+                <div
+                  key={spec.label}
+                  className="flex-shrink-0 w-36 sm:w-auto card-elevated rounded-2xl p-4 hover:border-accent/20"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center mb-3">
+                    <spec.icon size={16} className="text-accent" />
+                  </div>
                   <p className="text-xs text-muted">{spec.label}</p>
-                  <p className="text-sm font-medium text-primary mt-0.5">{spec.value}</p>
+                  <p className="text-sm font-semibold text-primary mt-0.5">{spec.value}</p>
                 </div>
               ))}
             </div>
 
-            {/* Description */}
-            <div>
+            {/* ── Description ── */}
+            <div className="animate-fade-in-up stagger-3">
               <h2 className="text-lg font-semibold text-primary mb-3">Description</h2>
-              <p className="text-sm text-muted leading-relaxed whitespace-pre-line">
-                {property.description}
-              </p>
+              <div className="card-elevated rounded-2xl p-5">
+                <p className="text-sm text-muted leading-relaxed whitespace-pre-line">
+                  {property.description}
+                </p>
+              </div>
             </div>
 
-            {/* Agent Reviews Section */}
+            {/* ── Agent Reviews Section ── */}
             {agent && (
-              <div>
+              <div className="animate-fade-in-up stagger-4">
                 <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-lg font-semibold text-primary">
+                  <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
+                    <MessageSquare size={18} className="text-accent" />
                     Agent Reviews
-                    {reviewTotal > 0 && <span className="text-muted font-normal text-sm ml-2">({reviewTotal})</span>}
+                    {reviewTotal > 0 && (
+                      <span className="text-xs font-medium text-muted bg-surface px-2 py-0.5 rounded-full">
+                        {reviewTotal}
+                      </span>
+                    )}
                   </h2>
                   {agentStats && agentStats.avgRating > 0 && (
-                    <div className="flex items-center gap-1.5">
-                      <Star size={16} className="fill-amber-400 text-amber-400" />
-                      <span className="text-sm font-semibold text-primary">{agentStats.avgRating}</span>
-                      <span className="text-xs text-muted">avg</span>
+                    <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-100">
+                      <Star size={14} className="fill-amber-400 text-amber-400" />
+                      <span className="text-sm font-bold text-amber-700">{agentStats.avgRating}</span>
+                      <span className="text-xs text-amber-600">avg</span>
                     </div>
                   )}
                 </div>
 
                 {/* Review Form for Buyers */}
                 {user && user.role === 'Buyer' && user.id !== property.agent_id && !hasReviewed && (
-                  <div className="bg-surface rounded-2xl p-5 mb-5">
-                    <p className="text-sm font-medium text-primary mb-3">Rate this agent</p>
+                  <div className="card-elevated rounded-2xl p-5 mb-5">
+                    <p className="text-sm font-semibold text-primary mb-3">Rate this agent</p>
                     <form onSubmit={handleSubmitReview}>
-                      <div className="flex items-center gap-1 mb-3">
+                      <div className="flex items-center gap-1 mb-4">
                         {[1, 2, 3, 4, 5].map((s) => (
                           <button
                             key={s}
@@ -321,7 +367,7 @@ export default function PropertyDetail() {
                             onClick={() => setReviewRating(s)}
                             onMouseEnter={() => setHoverRating(s)}
                             onMouseLeave={() => setHoverRating(0)}
-                            className="p-0.5"
+                            className="p-1 transition-transform hover:scale-110"
                           >
                             <Star
                               size={28}
@@ -331,19 +377,19 @@ export default function PropertyDetail() {
                             />
                           </button>
                         ))}
-                        <span className="text-sm text-muted ml-2">{hoverRating || reviewRating}/5</span>
+                        <span className="text-sm text-muted ml-2 font-medium">{hoverRating || reviewRating}/5</span>
                       </div>
                       <textarea
                         value={reviewContent}
                         onChange={(e) => setReviewContent(e.target.value)}
                         placeholder="Share your experience with this agent..."
                         rows={3}
-                        className="w-full px-4 py-3 bg-white rounded-xl text-sm border border-border/50 focus:border-accent transition-colors resize-none"
+                        className="w-full px-4 py-3 bg-surface rounded-xl text-sm border border-border/60 focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all resize-none"
                       />
                       <button
                         type="submit"
                         disabled={submitting}
-                        className="mt-3 bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                        className="mt-3 btn-primary px-6 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50 cursor-pointer"
                       >
                         {submitting ? 'Submitting...' : 'Submit Review'}
                       </button>
@@ -353,9 +399,9 @@ export default function PropertyDetail() {
 
                 {/* Not logged in prompt */}
                 {!user && (
-                  <div className="bg-surface rounded-2xl p-5 mb-5 text-center">
+                  <div className="card-elevated rounded-2xl p-5 mb-5 text-center">
                     <p className="text-sm text-muted">
-                      <Link to="/login" className="text-accent font-medium hover:underline">Sign in</Link> to rate this agent
+                      <Link to="/login" className="text-accent font-semibold hover:underline">Sign in</Link> to rate this agent
                     </p>
                   </div>
                 )}
@@ -364,19 +410,19 @@ export default function PropertyDetail() {
                 {reviews.length > 0 ? (
                   <div className="space-y-4">
                     {reviews.map((review) => (
-                      <div key={review.id} className="bg-surface rounded-xl p-4">
+                      <div key={review.id} className="card-elevated rounded-2xl p-5">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center overflow-hidden">
+                            <div className="w-10 h-10 rounded-full bg-surface flex items-center justify-center overflow-hidden border border-border/60">
                               {review.Reviewer?.avatar_url ? (
                                 <img src={review.Reviewer.avatar_url} alt="" className="w-full h-full object-cover" />
                               ) : (
-                                <User size={14} className="text-muted" />
+                                <User size={16} className="text-muted" />
                               )}
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-primary">{review.Reviewer?.name || 'Anonymous'}</p>
-                              <div className="flex items-center gap-1.5 mt-0.5">
+                              <p className="text-sm font-semibold text-primary">{review.Reviewer?.name || 'Anonymous'}</p>
+                              <div className="flex items-center gap-2 mt-0.5">
                                 <div className="flex items-center gap-0.5">
                                   {[1, 2, 3, 4, 5].map((s) => (
                                     <Star key={s} size={12} className={s <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />
@@ -391,27 +437,29 @@ export default function PropertyDetail() {
                           {user && review.reviewer_id === user.id && (
                             <button
                               onClick={() => handleDeleteReview(review.id)}
-                              className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-muted hover:text-red-500 transition-colors"
+                              className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-muted hover:text-red-500 hover:bg-red-50 transition-all"
                             >
                               <Trash2 size={14} />
                             </button>
                           )}
                         </div>
-                        <p className="mt-2.5 text-sm text-secondary leading-relaxed pl-12">{review.content}</p>
+                        <p className="mt-3 text-sm text-secondary leading-relaxed pl-[52px]">{review.content}</p>
                       </div>
                     ))}
                     {reviewTotal > 5 && (
                       <Link
                         to={`/agents/${agent.id}`}
-                        className="block text-center text-sm text-accent hover:underline py-2"
+                        className="block text-center text-sm text-accent font-medium hover:underline py-3"
                       >
                         View all {reviewTotal} reviews
                       </Link>
                     )}
                   </div>
                 ) : (
-                  <div className="bg-surface rounded-xl p-8 text-center">
-                    <Star size={24} className="mx-auto text-muted mb-2" />
+                  <div className="card-elevated rounded-2xl p-10 text-center">
+                    <div className="w-12 h-12 rounded-full bg-surface mx-auto flex items-center justify-center mb-3">
+                      <Star size={20} className="text-muted" />
+                    </div>
                     <p className="text-sm text-muted">No reviews yet for this agent</p>
                   </div>
                 )}
@@ -419,86 +467,102 @@ export default function PropertyDetail() {
             )}
           </div>
 
-          {/* Right Sidebar */}
+          {/* ── Right Sidebar ── */}
           <div className="space-y-6">
             {/* Agent Card */}
             {agent && (
-              <div className="bg-surface rounded-2xl p-6 sticky top-24">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-4">Listed by</h3>
-                <Link to={`/agents/${agent.id}`} className="flex items-center gap-3 mb-4 group">
-                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center overflow-hidden">
-                    {agent.avatar_url ? (
-                      <img src={agent.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <User size={20} className="text-muted" />
+              <div className="card-elevated rounded-2xl overflow-hidden sticky top-24 animate-fade-in-up stagger-2">
+                {/* Gradient header */}
+                <div className="gradient-accent h-20 relative">
+                  <div className="absolute -bottom-8 left-6">
+                    <Link to={`/agents/${agent.id}`}>
+                      <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-lg border-4 border-white">
+                        {agent.avatar_url ? (
+                          <img src={agent.avatar_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <User size={24} className="text-muted" />
+                        )}
+                      </div>
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="pt-12 px-6 pb-6">
+                  <Link to={`/agents/${agent.id}`} className="group">
+                    <p className="font-semibold text-primary text-lg group-hover:text-accent transition-colors">
+                      {agent.name}
+                    </p>
+                    <p className="text-xs text-accent font-medium">View Profile</p>
+                  </Link>
+
+                  {agentStats && (
+                    <div className="flex items-center gap-2 mt-3">
+                      <div className="flex items-center gap-0.5">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star
+                            key={s}
+                            size={14}
+                            className={s <= Math.round(agentStats.avgRating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-sm font-semibold text-primary">{agentStats.avgRating || '0'}</span>
+                      <span className="text-xs text-muted">({agentStats.totalReviews} {agentStats.totalReviews === 1 ? 'review' : 'reviews'})</span>
+                    </div>
+                  )}
+
+                  {/* Divider */}
+                  <div className="border-t border-border/60 my-5" />
+
+                  <div className="space-y-3">
+                    {agent.email && (
+                      <a href={`mailto:${agent.email}`} className="flex items-center gap-3 text-sm text-secondary hover:text-accent transition-colors group">
+                        <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center group-hover:bg-accent/10 transition-colors">
+                          <Mail size={14} className="text-muted group-hover:text-accent transition-colors" />
+                        </div>
+                        <span className="truncate">{agent.email}</span>
+                      </a>
+                    )}
+                    {agent.phone && (
+                      <a href={`tel:${agent.phone}`} className="flex items-center gap-3 text-sm text-secondary hover:text-accent transition-colors group">
+                        <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center group-hover:bg-accent/10 transition-colors">
+                          <Phone size={14} className="text-muted group-hover:text-accent transition-colors" />
+                        </div>
+                        {agent.phone}
+                      </a>
                     )}
                   </div>
-                  <div>
-                    <p className="font-medium text-primary group-hover:text-accent transition-colors">{agent.name}</p>
-                    <p className="text-xs text-accent">View Profile</p>
-                  </div>
-                </Link>
 
-                {agentStats && (
-                  <div className="flex items-center gap-2 mb-5 px-1">
-                    <div className="flex items-center gap-0.5">
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <Star
-                          key={s}
-                          size={14}
-                          className={s <= Math.round(agentStats.avgRating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm font-medium text-primary">{agentStats.avgRating || '0'}</span>
-                    <span className="text-xs text-muted">({agentStats.totalReviews} {agentStats.totalReviews === 1 ? 'review' : 'reviews'})</span>
-                  </div>
-                )}
-
-                <div className="space-y-3">
-                  {agent.email && (
-                    <a href={`mailto:${agent.email}`} className="flex items-center gap-3 text-sm text-secondary hover:text-accent transition-colors">
-                      <Mail size={14} className="text-muted" />
-                      {agent.email}
-                    </a>
+                  {!isOwner && (
+                    <button
+                      onClick={handleContactAgent}
+                      disabled={contactingAgent}
+                      className="mt-6 w-full btn-primary py-3.5 rounded-xl text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <MessageSquare size={16} />
+                      {contactingAgent ? 'Opening chat...' : 'Contact Agent'}
+                    </button>
                   )}
+
                   {agent.phone && (
-                    <a href={`tel:${agent.phone}`} className="flex items-center gap-3 text-sm text-secondary hover:text-accent transition-colors">
-                      <Phone size={14} className="text-muted" />
-                      {agent.phone}
+                    <a
+                      href={`tel:${agent.phone}`}
+                      className="mt-3 block w-full text-primary text-center py-3 rounded-xl text-sm font-semibold border border-border/60 bg-white hover:bg-surface hover:border-accent/30 transition-all"
+                    >
+                      Call Now
                     </a>
                   )}
                 </div>
-
-                {!isOwner && (
-                  <button
-                    onClick={handleContactAgent}
-                    disabled={contactingAgent}
-                    className="mt-6 w-full bg-primary text-white py-3 rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    <MessageSquare size={16} />
-                    {contactingAgent ? 'Opening chat...' : 'Contact Agent'}
-                  </button>
-                )}
-
-                {agent.phone && (
-                  <a
-                    href={`tel:${agent.phone}`}
-                    className="mt-3 block w-full bg-white text-primary text-center py-3 rounded-xl text-sm font-medium border border-border/50 hover:bg-surface transition-colors"
-                  >
-                    Call Now
-                  </a>
-                )}
               </div>
             )}
 
             {/* Owner Actions */}
             {isOwner && (
-              <div className="bg-surface rounded-2xl p-6">
+              <div className="card-elevated rounded-2xl p-6">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-4">Manage</h3>
                 <Link
                   to={`/properties/${property.id}/edit`}
-                  className="block w-full bg-accent text-white text-center py-3 rounded-xl text-sm font-medium hover:bg-accent/90 transition-colors"
+                  className="block w-full btn-primary text-center py-3 rounded-xl text-sm font-semibold"
                 >
                   Edit Property
                 </Link>
