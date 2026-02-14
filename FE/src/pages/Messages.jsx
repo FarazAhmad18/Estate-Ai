@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { MessageSquare } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { MessageSquare, ArrowLeft } from 'lucide-react';
 import api from '../lib/api';
 import ConversationList from '../components/messaging/ConversationList';
 import ChatThread from '../components/messaging/ChatThread';
 
 export default function Messages() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [mobileShowChat, setMobileShowChat] = useState(false);
 
@@ -54,6 +55,12 @@ export default function Messages() {
       }`}>
         <div className="px-5 py-4 border-b border-border/40">
           <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => navigate(-1)}
+              className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-muted hover:text-primary hover:bg-surface-2 transition-colors"
+            >
+              <ArrowLeft size={16} />
+            </button>
             <div className="w-8 h-8 rounded-lg gradient-accent flex items-center justify-center">
               <MessageSquare size={14} className="text-white" />
             </div>
